@@ -20,6 +20,7 @@ go test -v -race
 header BUILD
 go build -v -o twivility *.go
 header RUN
-/usr/bin/time -v -o "$TIMEFILE" ./twivility $*
+# Note that authed will change the current dir, so the cmd is relative to it
+/usr/bin/time -v -o "$TIMEFILE" ../authed ./srv/twivility $*
 header TIMING
 cat $TIMEFILE
