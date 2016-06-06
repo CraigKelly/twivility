@@ -1,15 +1,21 @@
 package main
 
 import (
+	"encoding/gob"
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"os"
+	"sort"
 
 	"github.com/coreos/pkg/flagutil"
 	"github.com/dghubble/go-twitter/twitter"
 	"github.com/dghubble/oauth1"
 )
+
+/////////////////////////////////////////////////////////////////////////////
+// Helpers for error handling
 
 func logPanic(msg string) {
 	log.Fatal(msg)
@@ -21,6 +27,170 @@ func pcheck(err error) {
 		logPanic(fmt.Sprintf("Fatal Error: %v\n", err))
 	}
 }
+
+func safeClose(target io.Closer) {
+	err := target.Close()
+	if err != nil {
+		fmt.Println("Error closing something - will continue")
+	}
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// File storage handling
+
+type fileRecord struct {
+	TweetID   int64
+	UserID    int64
+	UserName  string
+	Text      string
+	Timestamp string
+}
+
+type fileRecordSlice []fileRecord
+
+// sort.Interface
+func (frs fileRecordSlice) Len() int           { return len(frs) }
+func (frs fileRecordSlice) Swap(i, j int)      { frs[i], frs[j] = frs[j], frs[i] }
+func (frs fileRecordSlice) Less(i, j int) bool { return frs[i].TweetID < frs[j].TweetID }
+
+// Only works if we are already sorted
+func (frs fileRecordSlice) MinMax() (mn int64, mx int64) {
+	ln := len(frs)
+	if ln < 1 {
+		return 0, 0
+	}
+	return frs[ln-1].TweetID, frs[0].TweetID
+}
+
+func (frs fileRecordSlice) Seen() map[int64]bool {
+	seen := make(map[int64]bool)
+	for _, tweet := range frs {
+		seen[tweet.TweetID] = true
+	}
+	return seen
+}
+
+func sortRecords(frs fileRecordSlice) {
+	sort.Sort(sort.Reverse(frs))
+}
+
+func touchFile(filename string) {
+	if _, err := os.Stat(filename); os.IsNotExist(err) {
+		f, err := os.Create(filename)
+		pcheck(err)
+		safeClose(f)
+	}
+}
+
+// Write the file - note that the slice is sorted (and therefore mutated)
+func (frs fileRecordSlice) writeFile(filename string) {
+	output, err := os.Create(filename)
+	pcheck(err)
+	defer safeClose(output)
+
+	sortRecords(frs)
+
+	enc := gob.NewEncoder(output)
+	for _, obj := range frs {
+		err := enc.Encode(obj)
+		pcheck(err)
+	}
+}
+
+// Read the file
+func readFile(filename string) fileRecordSlice {
+	input, err := os.Open(filename)
+	pcheck(err)
+	defer safeClose(input)
+
+	dec := gob.NewDecoder(input)
+	records := make([]fileRecord, 0, 512)
+	var rec fileRecord
+
+	for {
+		err := dec.Decode(&rec)
+		if err != nil {
+			if err == io.EOF {
+				break
+			} else {
+				pcheck(err)
+			}
+		}
+
+		records = append(records, rec)
+	}
+
+	return fileRecordSlice(records)
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// Implementation of actions
+
+// UpdateTweets - read our tweet store add tweet that we haven't seen
+func UpdateTweets(client *twitter.Client) {
+	homeTimelineParams := &twitter.HomeTimelineParams{Count: 20}
+	tweets, _, tweetErr := client.Timelines.HomeTimeline(homeTimelineParams)
+	if tweetErr != nil {
+		fmt.Printf("Error getting user timeline: %v\n", tweetErr)
+		return
+	}
+
+	filename := "tweetstore.gob"
+
+	touchFile(filename) // Make sure at least empty file exists
+	existing := readFile(filename)
+	sortRecords(existing)
+	mnID, mxID := existing.MinMax()
+	seen := existing.Seen()
+	fmt.Printf("Found %d tweets in file %s - ID range %d<->%d\n", len(existing), filename, mnID, mxID)
+
+	addCount := 0
+
+	for _, tweet := range tweets {
+		tweetID := tweet.ID
+		if _, inMap := seen[tweet.ID]; !inMap {
+			// New ID!
+			newRec := fileRecord{
+				TweetID:   tweetID,
+				UserID:    tweet.User.ID,
+				UserName:  tweet.User.Name,
+				Text:      tweet.Text,
+				Timestamp: tweet.CreatedAt,
+			}
+			existing = append(existing, newRec)
+			seen[tweetID] = true
+			addCount++
+
+			if tweetID < mnID {
+				mnID = tweetID
+			}
+			if tweetID < mxID {
+				mxID = tweetID
+			}
+
+			fmt.Printf("Added tweet: %v\n", newRec)
+		}
+	}
+
+	if addCount > 0 {
+		fmt.Printf("Added %d record: rewriting file %s\n", addCount, filename)
+		existing.writeFile(filename)
+	}
+}
+
+// DumpTweets - write all tweets in our tweet store
+func DumpTweets() {
+	filename := "tweetstore.gob"
+	touchFile(filename) // Make sure at least empty file exists
+	records := readFile(filename)
+	fmt.Printf("Read %d records from %s\n", len(records), filename)
+	for i, tweet := range records {
+		fmt.Printf("Rec #%12d: %v\n", i, tweet)
+	}
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// Entry point
 
 func main() {
 	flags := flag.NewFlagSet("user-auth", flag.ExitOnError)
@@ -36,6 +206,8 @@ func main() {
 		log.Fatal("Consumer key/secret and Access token/secret required")
 	}
 
+	cmd := flags.Arg(0)
+
 	// Remember that OAuth1 http.Client will automatically authorize Requests
 	config := oauth1.NewConfig(*consumerKey, *consumerSecret)
 	token := oauth1.NewToken(*accessToken, *accessSecret)
@@ -45,6 +217,7 @@ func main() {
 	client := twitter.NewClient(httpClient)
 
 	// One-timer/startup - Verify Credentials
+	fmt.Println("Verifying user...")
 	verifyParams := &twitter.AccountVerifyParams{
 		SkipStatus:   twitter.Bool(true),
 		IncludeEmail: twitter.Bool(true),
@@ -53,16 +226,11 @@ func main() {
 	pcheck(userError)
 	fmt.Printf("User Verified:%v\n", user.Name)
 
-	fmt.Printf("\nTIMELINE SAMPLE\n\n")
-
-	// Home Timeline
-	homeTimelineParams := &twitter.HomeTimelineParams{Count: 20}
-	tweets, _, tweetErr := client.Timelines.HomeTimeline(homeTimelineParams)
-	if tweetErr != nil {
-		fmt.Printf("Error getting user timeline: %v\n", tweetErr)
+	if cmd == "update" {
+		UpdateTweets(client)
+	} else if cmd == "dump" {
+		DumpTweets()
 	} else {
-		for _, tweet := range tweets {
-			fmt.Printf("%s: %s\n\n", tweet.User.Name, tweet.Text)
-		}
+		fmt.Println("Options are update or dump")
 	}
 }
