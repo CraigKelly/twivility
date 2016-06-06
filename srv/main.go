@@ -127,6 +127,7 @@ func readFile(filename string) fileRecordSlice {
 // Implementation of actions
 
 // UpdateTweets - read our tweet store add tweet that we haven't seen
+// TODO: actually find unread tweets with max_id and since_id
 func UpdateTweets(client *twitter.Client) {
 	homeTimelineParams := &twitter.HomeTimelineParams{Count: 20}
 	tweets, _, tweetErr := client.Timelines.HomeTimeline(homeTimelineParams)
