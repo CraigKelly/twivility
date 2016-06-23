@@ -5,7 +5,7 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd $SCRIPT_DIR
 
 # Configuration
-export GOMAXPROCS=8
+# export GOMAXPROCS=8
 TIMEFILE=$SCRIPT_DIR/timing
 
 # Setup color printing for our headers
