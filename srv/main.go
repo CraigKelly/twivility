@@ -14,6 +14,14 @@ import (
 	"github.com/dghubble/oauth1"
 )
 
+// TODO: web service giving stats on file contents - extra file Options
+// TODO: web service can be prompted to update, and also has a scheduled update
+// TODO: concurrency: write to new file, take lock, replace old file, unlock
+// TODO: honor lock in tweet update/dump functions
+// TODO: switch from fmt.print to actual logging
+// TODO: enough logging/backup to be able to restart/recover
+// TODO: refactor - this is one big hair ball
+
 /////////////////////////////////////////////////////////////////////////////
 // Helpers for error handling
 
