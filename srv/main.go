@@ -127,56 +127,79 @@ func readFile(filename string) fileRecordSlice {
 // Implementation of actions
 
 // UpdateTweets - read our tweet store add tweet that we haven't seen
-// TODO: actually find unread tweets with max_id and since_id
 func UpdateTweets(client *twitter.Client) {
-	homeTimelineParams := &twitter.HomeTimelineParams{Count: 20}
-	tweets, _, tweetErr := client.Timelines.HomeTimeline(homeTimelineParams)
-	if tweetErr != nil {
-		fmt.Printf("Error getting user timeline: %v\n", tweetErr)
-		return
-	}
-
 	filename := "tweetstore.gob"
 
 	touchFile(filename) // Make sure at least empty file exists
 	existing := readFile(filename)
 	sortRecords(existing)
-	mnID, mxID := existing.MinMax()
 	seen := existing.Seen()
+	mnID, mxID := existing.MinMax()
 	fmt.Printf("Found %d tweets in file %s - ID range %d<->%d\n", len(existing), filename, mnID, mxID)
 
-	addCount := 0
+	qCount := 190 // try to be good citizens
+	qSince := int64(0)
+	qMax := int64(0)
+	if len(existing) > 0 {
+		qSince = mxID
+	}
 
-	for _, tweet := range tweets {
-		tweetID := tweet.ID
-		if _, inMap := seen[tweet.ID]; !inMap {
-			// New ID!
-			newRec := fileRecord{
-				TweetID:   tweetID,
-				UserID:    tweet.User.ID,
-				UserName:  tweet.User.Name,
-				Text:      tweet.Text,
-				Timestamp: tweet.CreatedAt,
-			}
-			existing = append(existing, newRec)
-			seen[tweetID] = true
-			addCount++
+	totalAdded := 0
+	for {
+		homeTimelineParams := &twitter.HomeTimelineParams{
+			Count:   qCount,
+			MaxID:   qMax,
+			SinceID: qSince,
+		}
+		fmt.Printf("GET! Count:%v, Max:%d, Since:%d\n",
+			homeTimelineParams.Count,
+			homeTimelineParams.MaxID,
+			homeTimelineParams.SinceID)
+		tweets, _, tweetErr := client.Timelines.HomeTimeline(homeTimelineParams)
+		if tweetErr != nil {
+			fmt.Printf("Error getting user timeline: %v\n", tweetErr)
+			return
+		}
 
-			if tweetID < mnID {
-				mnID = tweetID
-			}
-			if tweetID < mxID {
-				mxID = tweetID
-			}
+		addCount := 0
+		preSeen := len(seen)
+		batchMin := int64(0)
+		for _, tweet := range tweets {
+			tweetID := tweet.ID
+			if _, inMap := seen[tweet.ID]; !inMap {
+				// New ID!
+				newRec := fileRecord{
+					TweetID:   tweetID,
+					UserID:    tweet.User.ID,
+					UserName:  tweet.User.Name,
+					Text:      tweet.Text,
+					Timestamp: tweet.CreatedAt,
+				}
+				existing = append(existing, newRec)
+				seen[tweetID] = true
+				addCount++
 
-			fmt.Printf("Added tweet: %v\n", newRec)
+				if tweetID < batchMin || batchMin == 0 {
+					batchMin = tweetID
+				}
+
+				fmt.Printf("Added tweet: %v\n", newRec.TweetID)
+			}
+		}
+
+		totalAdded += addCount
+		if len(seen) == preSeen {
+			break // Nothing new or don't know how to continue
+		}
+
+		qMax = batchMin
+		if qMax <= qSince+1 || qSince < 1 {
+			break // Nothing left to find or only one query allowed
 		}
 	}
 
-	if addCount > 0 {
-		fmt.Printf("Added %d record: rewriting file %s\n", addCount, filename)
-		existing.writeFile(filename)
-	}
+	fmt.Printf("Added %d records: rewriting file %s\n", totalAdded, filename)
+	existing.writeFile(filename)
 }
 
 // DumpTweets - write all tweets in our tweet store
