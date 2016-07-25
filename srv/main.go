@@ -12,6 +12,7 @@ import (
 )
 
 // TODO: switch to some kind of dep mgr
+// TODO: we'll probably want to use extractEntitiesWithIndices from twitter-text on the client
 // TODO: web service giving stats on file contents - extra file Options
 // TODO: web service can be prompted to update, and also has a scheduled update
 // TODO: concurrency: write to new file, take lock, replace old file, unlock
@@ -104,9 +105,10 @@ func DumpTweets() {
 	TouchFile(filename) // Make sure at least empty file exists
 	records := ReadFile(filename)
 	fmt.Printf("Read %d records from %s\n", len(records), filename)
-	for i, tweet := range records {
-		fmt.Printf("Rec #%12d: %v\n", i, tweet)
-	}
+	// for i, tweet := range records {
+	// 	fmt.Printf("Rec #%12d: %v\n", i, tweet)
+	// }
+	fmt.Println(string(CreateTwitterJSON(records)))
 }
 
 /////////////////////////////////////////////////////////////////////////////
