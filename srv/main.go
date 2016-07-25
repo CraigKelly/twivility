@@ -1,135 +1,23 @@
 package main
 
 import (
-	"encoding/gob"
 	"flag"
 	"fmt"
-	"io"
 	"log"
 	"os"
-	"sort"
 
 	"github.com/coreos/pkg/flagutil"
 	"github.com/dghubble/go-twitter/twitter"
 	"github.com/dghubble/oauth1"
 )
 
+// TODO: switch to some kind of dep mgr
 // TODO: web service giving stats on file contents - extra file Options
 // TODO: web service can be prompted to update, and also has a scheduled update
 // TODO: concurrency: write to new file, take lock, replace old file, unlock
 // TODO: honor lock in tweet update/dump functions
 // TODO: switch from fmt.print to actual logging
 // TODO: enough logging/backup to be able to restart/recover
-// TODO: refactor - this is one big hair ball
-
-/////////////////////////////////////////////////////////////////////////////
-// Helpers for error handling
-
-func logPanic(msg string) {
-	log.Fatal(msg)
-	panic(msg)
-}
-
-func pcheck(err error) {
-	if err != nil {
-		logPanic(fmt.Sprintf("Fatal Error: %v\n", err))
-	}
-}
-
-func safeClose(target io.Closer) {
-	err := target.Close()
-	if err != nil {
-		fmt.Println("Error closing something - will continue")
-	}
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// File storage handling
-
-type fileRecord struct {
-	TweetID   int64
-	UserID    int64
-	UserName  string
-	Text      string
-	Timestamp string
-}
-
-type fileRecordSlice []fileRecord
-
-// sort.Interface
-func (frs fileRecordSlice) Len() int           { return len(frs) }
-func (frs fileRecordSlice) Swap(i, j int)      { frs[i], frs[j] = frs[j], frs[i] }
-func (frs fileRecordSlice) Less(i, j int) bool { return frs[i].TweetID < frs[j].TweetID }
-
-// Only works if we are already sorted
-func (frs fileRecordSlice) MinMax() (mn int64, mx int64) {
-	ln := len(frs)
-	if ln < 1 {
-		return 0, 0
-	}
-	return frs[ln-1].TweetID, frs[0].TweetID
-}
-
-func (frs fileRecordSlice) Seen() map[int64]bool {
-	seen := make(map[int64]bool)
-	for _, tweet := range frs {
-		seen[tweet.TweetID] = true
-	}
-	return seen
-}
-
-func sortRecords(frs fileRecordSlice) {
-	sort.Sort(sort.Reverse(frs))
-}
-
-func touchFile(filename string) {
-	if _, err := os.Stat(filename); os.IsNotExist(err) {
-		f, err := os.Create(filename)
-		pcheck(err)
-		safeClose(f)
-	}
-}
-
-// Write the file - note that the slice is sorted (and therefore mutated)
-func (frs fileRecordSlice) writeFile(filename string) {
-	output, err := os.Create(filename)
-	pcheck(err)
-	defer safeClose(output)
-
-	sortRecords(frs)
-
-	enc := gob.NewEncoder(output)
-	for _, obj := range frs {
-		err := enc.Encode(obj)
-		pcheck(err)
-	}
-}
-
-// Read the file
-func readFile(filename string) fileRecordSlice {
-	input, err := os.Open(filename)
-	pcheck(err)
-	defer safeClose(input)
-
-	dec := gob.NewDecoder(input)
-	records := make([]fileRecord, 0, 512)
-	var rec fileRecord
-
-	for {
-		err := dec.Decode(&rec)
-		if err != nil {
-			if err == io.EOF {
-				break
-			} else {
-				pcheck(err)
-			}
-		}
-
-		records = append(records, rec)
-	}
-
-	return fileRecordSlice(records)
-}
 
 /////////////////////////////////////////////////////////////////////////////
 // Implementation of actions
@@ -138,9 +26,9 @@ func readFile(filename string) fileRecordSlice {
 func UpdateTweets(client *twitter.Client) {
 	filename := "tweetstore.gob"
 
-	touchFile(filename) // Make sure at least empty file exists
-	existing := readFile(filename)
-	sortRecords(existing)
+	TouchFile(filename) // Make sure at least empty file exists
+	existing := ReadFile(filename)
+	SortRecords(existing)
 	seen := existing.Seen()
 	mnID, mxID := existing.MinMax()
 	fmt.Printf("Found %d tweets in file %s - ID range %d<->%d\n", len(existing), filename, mnID, mxID)
@@ -176,7 +64,7 @@ func UpdateTweets(client *twitter.Client) {
 			tweetID := tweet.ID
 			if _, inMap := seen[tweet.ID]; !inMap {
 				// New ID!
-				newRec := fileRecord{
+				newRec := FileRecord{
 					TweetID:   tweetID,
 					UserID:    tweet.User.ID,
 					UserName:  tweet.User.Name,
@@ -207,14 +95,14 @@ func UpdateTweets(client *twitter.Client) {
 	}
 
 	fmt.Printf("Added %d records: rewriting file %s\n", totalAdded, filename)
-	existing.writeFile(filename)
+	existing.WriteFile(filename)
 }
 
 // DumpTweets - write all tweets in our tweet store
 func DumpTweets() {
 	filename := "tweetstore.gob"
-	touchFile(filename) // Make sure at least empty file exists
-	records := readFile(filename)
+	TouchFile(filename) // Make sure at least empty file exists
+	records := ReadFile(filename)
 	fmt.Printf("Read %d records from %s\n", len(records), filename)
 	for i, tweet := range records {
 		fmt.Printf("Rec #%12d: %v\n", i, tweet)
@@ -260,7 +148,7 @@ func main() {
 
 	if cmd == "update" {
 		UpdateTweets(client)
-	} else if cmd == "dump" {
+	} else if cmd == "dump" || cmd == "json" {
 		DumpTweets()
 	} else {
 		fmt.Println("Options are update or dump")
