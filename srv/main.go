@@ -106,7 +106,7 @@ func DumpTweets() {
 	records := ReadFile(filename)
 	fmt.Printf("Read %d records from %s\n", len(records), filename)
 	// for i, tweet := range records {
-	// 	fmt.Printf("Rec #%12d: %v\n", i, tweet)
+	//     fmt.Printf("Rec #%12d: %v\n", i, tweet)
 	// }
 	fmt.Println(string(CreateTwitterJSON(records)))
 }
