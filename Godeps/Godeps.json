@@ -1,0 +1,39 @@
+{
+	"ImportPath": "bart/twivility",
+	"GoVersion": "go1.6",
+	"GodepVersion": "v74",
+	"Deps": [
+		{
+			"ImportPath": "github.com/cenkalti/backoff",
+			"Comment": "v1.0.0-5-ga603017",
+			"Rev": "a6030178a585d5972d4d33ce61f4a1fa40eaaed0"
+		},
+		{
+			"ImportPath": "github.com/coreos/pkg/flagutil",
+			"Comment": "v2",
+			"Rev": "7f080b6c11ac2d2347c3cd7521e810207ea1a041"
+		},
+		{
+			"ImportPath": "github.com/dghubble/go-twitter/twitter",
+			"Rev": "6fd9c6878dbbf2022a511f063e618d5a2d168d89"
+		},
+		{
+			"ImportPath": "github.com/dghubble/oauth1",
+			"Comment": "v0.4.0",
+			"Rev": "70562a5920ad9b6ff03ef697c0f90ae569abbd2b"
+		},
+		{
+			"ImportPath": "github.com/dghubble/sling",
+			"Comment": "v1.0-14-g5765fe1",
+			"Rev": "5765fe1bdc176ae984b074c8a89980d1f16e6dd8"
+		},
+		{
+			"ImportPath": "github.com/google/go-querystring/query",
+			"Rev": "9235644dd9e52eeae6fa48efd539fdc351a0af53"
+		},
+		{
+			"ImportPath": "golang.org/x/net/context",
+			"Rev": "c4c3ea71919de159c9e246d7be66deb7f0a39a58"
+		}
+	]
+}
