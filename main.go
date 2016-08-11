@@ -122,7 +122,7 @@ func main() {
 	pcheck(flagutil.SetFlagsFromEnv(flags, "TWITTER"))
 
 	if *consumerKey == "" || *consumerSecret == "" || *accessToken == "" || *accessSecret == "" {
-		log.Fatal("Consumer key/secret and Access token/secret required")
+		log.Panicf("Consumer key/secret and Access token/secret required\n")
 	}
 
 	cmd := flags.Arg(0)
