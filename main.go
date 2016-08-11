@@ -31,7 +31,7 @@ func UpdateTweets(client *twitter.Client) {
 	SortTwitterRecords(existing)
 	seen := existing.Seen()
 	mnID, mxID := existing.MinMax()
-	fmt.Printf("Found %d tweets in file %s - ID range %d<->%d\n", len(existing), filename, mnID, mxID)
+	log.Printf("Found %d tweets in file %s - ID range %d<->%d\n", len(existing), filename, mnID, mxID)
 
 	qCount := 190 // try to be good citizens
 	qSince := int64(0)
@@ -47,13 +47,13 @@ func UpdateTweets(client *twitter.Client) {
 			MaxID:   qMax,
 			SinceID: qSince,
 		}
-		fmt.Printf("GET! Count:%v, Max:%d, Since:%d\n",
+		log.Printf("GET! Count:%v, Max:%d, Since:%d\n",
 			homeTimelineParams.Count,
 			homeTimelineParams.MaxID,
 			homeTimelineParams.SinceID)
 		tweets, _, tweetErr := client.Timelines.HomeTimeline(homeTimelineParams)
 		if tweetErr != nil {
-			fmt.Printf("Error getting user timeline: %v\n", tweetErr)
+			log.Printf("Error getting user timeline: %v\n", tweetErr)
 			return
 		}
 
@@ -79,7 +79,7 @@ func UpdateTweets(client *twitter.Client) {
 					batchMin = tweetID
 				}
 
-				fmt.Printf("Added tweet: %v\n", newRec.TweetID)
+				log.Printf("Added tweet: %v\n", newRec.TweetID)
 			}
 		}
 
@@ -94,7 +94,7 @@ func UpdateTweets(client *twitter.Client) {
 		}
 	}
 
-	fmt.Printf("Added %d records: rewriting file %s\n", totalAdded, filename)
+	log.Printf("Added %d records: rewriting file %s\n", totalAdded, filename)
 	existing.WriteTwitterFile(filename)
 }
 
@@ -103,10 +103,8 @@ func DumpTweets() {
 	filename := "tweetstore.gob"
 	TouchFile(filename) // Make sure at least empty file exists
 	records := ReadTwitterFile(filename)
+	// Note use of fmt and not log - this is a CLI only routine
 	fmt.Printf("Read %d records from %s\n", len(records), filename)
-	// for i, tweet := range records {
-	//     fmt.Printf("Rec #%12d: %v\n", i, tweet)
-	// }
 	fmt.Println(string(CreateTwitterJSON(records)))
 }
 
@@ -138,20 +136,20 @@ func main() {
 	client := twitter.NewClient(httpClient)
 
 	// One-timer/startup - Verify Credentials
-	fmt.Println("Verifying user...")
+	log.Printf("Verifying user...\n")
 	verifyParams := &twitter.AccountVerifyParams{
 		SkipStatus:   twitter.Bool(true),
 		IncludeEmail: twitter.Bool(true),
 	}
 	user, _, userError := client.Accounts.VerifyCredentials(verifyParams)
 	pcheck(userError)
-	fmt.Printf("User Verified:%v\n", user.Name)
+	log.Printf("User Verified:%v\n", user.Name)
 
 	if cmd == "update" {
 		UpdateTweets(client)
 	} else if cmd == "dump" || cmd == "json" {
 		DumpTweets()
 	} else {
-		fmt.Println("Options are update or dump")
+		log.Printf("Options are update or dump\n")
 	}
 }
