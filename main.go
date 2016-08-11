@@ -11,7 +11,6 @@ import (
 	"github.com/dghubble/oauth1"
 )
 
-// TODO: switch to some kind of dep mgr
 // TODO: we'll probably want to use extractEntitiesWithIndices from twitter-text on the client
 // TODO: web service giving stats on file contents - extra file Options
 // TODO: web service can be prompted to update, and also has a scheduled update
@@ -28,8 +27,8 @@ func UpdateTweets(client *twitter.Client) {
 	filename := "tweetstore.gob"
 
 	TouchFile(filename) // Make sure at least empty file exists
-	existing := ReadFile(filename)
-	SortRecords(existing)
+	existing := ReadTwitterFile(filename)
+	SortTwitterRecords(existing)
 	seen := existing.Seen()
 	mnID, mxID := existing.MinMax()
 	fmt.Printf("Found %d tweets in file %s - ID range %d<->%d\n", len(existing), filename, mnID, mxID)
@@ -65,7 +64,7 @@ func UpdateTweets(client *twitter.Client) {
 			tweetID := tweet.ID
 			if _, inMap := seen[tweet.ID]; !inMap {
 				// New ID!
-				newRec := FileRecord{
+				newRec := TweetFileRecord{
 					TweetID:   tweetID,
 					UserID:    tweet.User.ID,
 					UserName:  tweet.User.Name,
@@ -96,14 +95,14 @@ func UpdateTweets(client *twitter.Client) {
 	}
 
 	fmt.Printf("Added %d records: rewriting file %s\n", totalAdded, filename)
-	existing.WriteFile(filename)
+	existing.WriteTwitterFile(filename)
 }
 
 // DumpTweets - write all tweets in our tweet store
 func DumpTweets() {
 	filename := "tweetstore.gob"
 	TouchFile(filename) // Make sure at least empty file exists
-	records := ReadFile(filename)
+	records := ReadTwitterFile(filename)
 	fmt.Printf("Read %d records from %s\n", len(records), filename)
 	// for i, tweet := range records {
 	//     fmt.Printf("Rec #%12d: %v\n", i, tweet)
