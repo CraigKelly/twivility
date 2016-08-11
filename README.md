@@ -9,21 +9,22 @@ what we want, but godep seems to be the dominant vendoring solutions right now
 (according to the State of Go Survey 2016). Once there is an official golang
 package manager, we'll switch to that.
 
-We supply the `./run` script to running the compiled executable. Note that
-this requires you to create your source-able file named `.authed`. See below.
-
-Build, test, and run the server component with `cd srv && ./run.sh`
-
-Run the server component with `./authed srv/twivility`
-
-## Newbie help
+## Tools
 
 To save dependencies: `godep save` and then commit to repo
 
-To test: `godep go test` (optionally end with `-v` and `-race` flags)
+We provide four helpful scripts:
 
-To build: `go build` or `go install`
-
+* `./test` - properly runs `godep go test` and includes the CL parameters we
+   want. Accepts parameters to pass to `godep go test` (they do *not* override
+   the default parameters)
+* `./cover` - uses `./test` to get source code coverage and then display the
+   HTML report. Notice that we use the build tag "test" to exclude main.go from
+   unit tests *and* from coverage.
+* `./build` - build twivility. We include the build date/time for display on
+   startup. Note that we do *not* do `go install`
+* `./run` - Run the binary built by `./build`, but first source the file
+   `./authed` which you must create (see below)
 
 ## ./authed
 
