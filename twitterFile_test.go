@@ -17,11 +17,14 @@ func TestEmptyTwitterFile(t *testing.T) {
 	defer os.Remove(tmpfile.Name())
 
 	// Touch file should create a file (duh)
+	os.Remove(tmpfile.Name()) // INSURE not there
 	TouchFile(tmpfile.Name())
 	var st os.FileInfo
 	st, err = tmpfile.Stat()
 	assert.Nil(err)
 	assert.False(st.IsDir())
+	// Again to make sure that we don't have an issue with an existing file
+	TouchFile(tmpfile.Name())
 
 	// We should be able to read an empty file and use our "usual" ops
 	data := ReadTwitterFile(tmpfile.Name())
