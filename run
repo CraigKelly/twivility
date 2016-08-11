@@ -1,7 +1,4 @@
 #!/bin/bash
 
-# Configuration
-# export GOMAXPROCS=8
-
 source ./authed
 twivility $*
