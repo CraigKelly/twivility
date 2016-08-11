@@ -1,9 +1,6 @@
 #!/bin/bash
 
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-cd $SCRIPT_DIR
-
-echo "IMPORTANT! This script shouldn't be present in a public repo"
+# "IMPORTANT! This script shouldn't be present in a public repo"
 
 # Find these values at:
 # https://dev.twitter.com/oauth/overview/application-owner-access-tokens
@@ -11,6 +8,3 @@ export TWITTER_CONSUMER_KEY="f9VHP15bZgt3vUCqUDwf62Bmu"
 export TWITTER_CONSUMER_SECRET="ivQFO0GyfpBmsClblb3HIpjvfa26GLXXb5XzIjRMHx7OeENV2B"
 export TWITTER_ACCESS_TOKEN="731251512752676864-2ekKLCL2VEJdW0tUlk0IshekQobmRSO"
 export TWITTER_ACCESS_SECRET="CJX0q3PCcyFPI7pvJvdS47r7Xw1CzwDOZv3fEGXfE5WHm"
-
-# Just run the command line we were given
-$*
