@@ -17,6 +17,8 @@ import (
 // TODO: ADMINS - web service giving stats on file contents - extra file Options
 // TODO: ADMINS - web service can be prompted to update, and also has a scheduled update
 
+var buildDate string // Set by our build script
+
 /////////////////////////////////////////////////////////////////////////////
 // Implementation of actions
 
@@ -110,6 +112,8 @@ func DumpTweets() {
 // Entry point
 
 func main() {
+	log.Printf("STARTING twivility - built %s\n", buildDate)
+
 	flags := flag.NewFlagSet("user-auth", flag.ExitOnError)
 	consumerKey := flags.String("consumer-key", "", "Twitter Consumer Key")
 	consumerSecret := flags.String("consumer-secret", "", "Twitter Consumer Secret")

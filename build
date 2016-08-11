@@ -1,0 +1,4 @@
+#!/bin/bash
+
+BUILDDATE=`date -u +%Y%m%d-%H%M%S`
+go build -ldflags "-X main.buildDate=$BUILDDATE"
