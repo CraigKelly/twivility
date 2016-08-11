@@ -2,8 +2,8 @@ package main
 
 import (
 	"encoding/gob"
-	"fmt"
 	"io"
+	"log"
 	"os"
 	"sort"
 )
@@ -12,7 +12,7 @@ import (
 func safeClose(target io.Closer) {
 	err := target.Close()
 	if err != nil {
-		fmt.Println("Error closing something - will continue")
+		log.Printf("Error closing something - will continue\n")
 	}
 }
 
