@@ -100,9 +100,11 @@ func main() {
 	log.Printf("User Verified:%v\n", user.Name)
 
 	wrapped := &WrappedTwitterClient{client: client}
-	service := NewTwivilityService(wrapped)
+	service := NewTwivilityService(wrapped, "tweetstore.gob")
 
 	if cmd == "service" {
+		service.UpdateTwitterFile()
+
 		http.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
 			io.WriteString(w, "hello, world!\n") //TODO: application
 		})
@@ -117,6 +119,8 @@ func main() {
 			log.Printf("GET %s - returning list of len %d for acct %s\n", req.URL.Path, len(tweets), acct)
 			jsonResponse(w, req, service.GetTweets(acct))
 		})
+
+		// TODO: run update in the background
 
 		addrListen := *hostBinding
 		if addrListen == "" {

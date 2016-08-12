@@ -18,11 +18,12 @@ func safeClose(target io.Closer) {
 
 // TweetFileRecord is the struct we store in a file for a single tweet
 type TweetFileRecord struct {
-	TweetID   int64
-	UserID    int64
-	UserName  string
-	Text      string
-	Timestamp string
+	TweetID        int64
+	UserID         int64
+	UserScreenName string
+	UserName       string
+	Text           string
+	Timestamp      string
 }
 
 // TweetFileRecordSlice is a slice of TweetFileRecords

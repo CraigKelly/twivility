@@ -77,3 +77,18 @@ func TestSortingTwitterFileRecords(t *testing.T) {
 	assert.Equal(int64(2), output[1].TweetID)
 	assert.Equal(int64(3), mx)
 }
+
+func TestInvalidTwitterFile(t *testing.T) {
+	assert := assert.New(t)
+
+	tmpfile, err := ioutil.TempFile("", "twivility")
+	pcheck(err)
+	defer os.Remove(tmpfile.Name())
+
+	tmpfile.WriteString("GARBAGE")
+	tmpfile.Close()
+
+	assert.Panics(func() {
+		ReadTwitterFile(tmpfile.Name())
+	})
+}
