@@ -3,10 +3,14 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
+	"io"
 	"log"
+	"net/http"
 	"os"
+	"strings"
 
 	"github.com/coreos/pkg/flagutil"
 	"github.com/dghubble/go-twitter/twitter"
@@ -20,92 +24,39 @@ import (
 var buildDate string // Set by our build script
 
 /////////////////////////////////////////////////////////////////////////////
-// Implementation of actions
+// Twitter client that ACTUALLY talked to Twitter
 
-// UpdateTweets - read our tweet store add tweet that we haven't seen
-func UpdateTweets(client *twitter.Client) {
-	filename := "tweetstore.gob"
-
-	TouchFile(filename) // Make sure at least empty file exists
-	existing := ReadTwitterFile(filename)
-	SortTwitterRecords(existing)
-	seen := existing.Seen()
-	mnID, mxID := existing.MinMax()
-	log.Printf("Found %d tweets in file %s - ID range %d<->%d\n", len(existing), filename, mnID, mxID)
-
-	qCount := 190 // try to be good citizens
-	qSince := int64(0)
-	qMax := int64(0)
-	if len(existing) > 0 {
-		qSince = mxID
-	}
-
-	totalAdded := 0
-	for {
-		homeTimelineParams := &twitter.HomeTimelineParams{
-			Count:   qCount,
-			MaxID:   qMax,
-			SinceID: qSince,
-		}
-		log.Printf("GET! Count:%v, Max:%d, Since:%d\n",
-			homeTimelineParams.Count,
-			homeTimelineParams.MaxID,
-			homeTimelineParams.SinceID)
-		tweets, _, tweetErr := client.Timelines.HomeTimeline(homeTimelineParams)
-		if tweetErr != nil {
-			log.Printf("Error getting user timeline: %v\n", tweetErr)
-			return
-		}
-
-		addCount := 0
-		preSeen := len(seen)
-		batchMin := int64(0)
-		for _, tweet := range tweets {
-			tweetID := tweet.ID
-			if _, inMap := seen[tweet.ID]; !inMap {
-				// New ID!
-				newRec := TweetFileRecord{
-					TweetID:   tweetID,
-					UserID:    tweet.User.ID,
-					UserName:  tweet.User.Name,
-					Text:      tweet.Text,
-					Timestamp: tweet.CreatedAt,
-				}
-				existing = append(existing, newRec)
-				seen[tweetID] = true
-				addCount++
-
-				if tweetID < batchMin || batchMin == 0 {
-					batchMin = tweetID
-				}
-
-				log.Printf("Added tweet: %v\n", newRec.TweetID)
-			}
-		}
-
-		totalAdded += addCount
-		if len(seen) == preSeen {
-			break // Nothing new or don't know how to continue
-		}
-
-		qMax = batchMin
-		if qMax <= qSince+1 || qSince < 1 {
-			break // Nothing left to find or only one query allowed
-		}
-	}
-
-	log.Printf("Added %d records: rewriting file %s\n", totalAdded, filename)
-	existing.WriteTwitterFile(filename)
+// WrappedTwitterClient is a thin wrapper around twitter.Client
+type WrappedTwitterClient struct {
+	client *twitter.Client
 }
 
-// DumpTweets - write all tweets in our tweet store
-func DumpTweets() {
-	filename := "tweetstore.gob"
-	TouchFile(filename) // Make sure at least empty file exists
-	records := ReadTwitterFile(filename)
-	// Note use of fmt and not log - this is a CLI only routine
-	fmt.Printf("Read %d records from %s\n", len(records), filename)
-	fmt.Println(string(CreateTwitterJSON(records)))
+// RetrieveHomeTimeline delegates to twitter.Client's Timelines.HomeTimeline
+func (cli *WrappedTwitterClient) RetrieveHomeTimeline(count int, since int64, max int64) ([]twitter.Tweet, error) {
+	homeTimelineParams := &twitter.HomeTimelineParams{
+		Count:   count,
+		MaxID:   max,
+		SinceID: since,
+	}
+	log.Printf("GET Home Timeline => Count:%v, Max:%d, Since:%d\n",
+		homeTimelineParams.Count,
+		homeTimelineParams.MaxID,
+		homeTimelineParams.SinceID)
+	tweets, _, tweetErr := cli.client.Timelines.HomeTimeline(homeTimelineParams)
+	return tweets, tweetErr
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// Helpers for serving
+
+func jsonResponse(w http.ResponseWriter, req *http.Request, jsonSrc interface{}) {
+	js, err := json.Marshal(jsonSrc)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(js)
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -119,6 +70,7 @@ func main() {
 	consumerSecret := flags.String("consumer-secret", "", "Twitter Consumer Secret")
 	accessToken := flags.String("access-token", "", "Twitter Access Token")
 	accessSecret := flags.String("access-secret", "", "Twitter Access Secret")
+	hostBinding := flags.String("host", "", "How to listen for service")
 
 	pcheck(flags.Parse(os.Args[1:]))
 	pcheck(flagutil.SetFlagsFromEnv(flags, "TWITTER"))
@@ -147,11 +99,41 @@ func main() {
 	pcheck(userError)
 	log.Printf("User Verified:%v\n", user.Name)
 
-	if cmd == "update" {
-		UpdateTweets(client)
+	wrapped := &WrappedTwitterClient{client: client}
+	service := NewTwivilityService(wrapped)
+
+	if cmd == "service" {
+		http.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
+			io.WriteString(w, "hello, world!\n") //TODO: application
+		})
+		http.HandleFunc("/accts", func(w http.ResponseWriter, req *http.Request) {
+			accts := service.GetAccounts()
+			log.Printf("GET %s - returning list of len %d\n", req.URL.Path, len(accts))
+			jsonResponse(w, req, accts)
+		})
+		http.HandleFunc("/tweets/", func(w http.ResponseWriter, req *http.Request) {
+			acct := strings.Replace(req.URL.Path, "/tweets/", "", 1)
+			tweets := service.GetTweets(acct)
+			log.Printf("GET %s - returning list of len %d for acct %s\n", req.URL.Path, len(tweets), acct)
+			jsonResponse(w, req, service.GetTweets(acct))
+		})
+
+		addrListen := *hostBinding
+		if addrListen == "" {
+			log.Printf("No host specified: using default\n")
+			addrListen = "0.0.0.0:8787"
+		}
+		log.Printf("Starting listen on %s\n", addrListen)
+		http.ListenAndServe(addrListen, nil)
+
+	} else if cmd == "update" {
+		service.UpdateTwitterFile()
+
 	} else if cmd == "dump" || cmd == "json" {
-		DumpTweets()
+		records := service.ReadTwitterFile()
+		fmt.Println(string(CreateTwitterJSON(records)))
+
 	} else {
-		log.Printf("Options are update or dump\n")
+		log.Printf("Options are service, update, or dump\n")
 	}
 }
