@@ -6,11 +6,12 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"io"
+	"html/template"
 	"log"
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/coreos/pkg/flagutil"
 	"github.com/dghubble/go-twitter/twitter"
@@ -33,10 +34,12 @@ type WrappedTwitterClient struct {
 
 // RetrieveHomeTimeline delegates to twitter.Client's Timelines.HomeTimeline
 func (cli *WrappedTwitterClient) RetrieveHomeTimeline(count int, since int64, max int64) ([]twitter.Tweet, error) {
+	trimUser := false
 	homeTimelineParams := &twitter.HomeTimelineParams{
-		Count:   count,
-		MaxID:   max,
-		SinceID: since,
+		Count:    count,
+		MaxID:    max,
+		SinceID:  since,
+		TrimUser: &trimUser,
 	}
 	log.Printf("GET Home Timeline => Count:%v, Max:%d, Since:%d\n",
 		homeTimelineParams.Count,
@@ -47,7 +50,7 @@ func (cli *WrappedTwitterClient) RetrieveHomeTimeline(count int, since int64, ma
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// Helpers for serving
+// Actual service running
 
 func jsonResponse(w http.ResponseWriter, req *http.Request, jsonSrc interface{}) {
 	js, err := json.Marshal(jsonSrc)
@@ -57,6 +60,62 @@ func jsonResponse(w http.ResponseWriter, req *http.Request, jsonSrc interface{})
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(js)
+}
+
+func runService(addrListen string, service *TwivilityService) {
+	// Initial update
+	service.UpdateTwitterFile()
+
+	// Make sure to update the tweets every 5 minutes
+	updateTicker := time.NewTicker(5 * time.Minute)
+	updateQuit := make(chan struct{})
+	go func() {
+		for {
+			select {
+			case <-updateTicker.C:
+				service.UpdateTwitterFile()
+			case <-updateQuit:
+				updateTicker.Stop()
+				return
+			}
+		}
+	}()
+
+	// Service functions
+	http.HandleFunc("/accts", func(w http.ResponseWriter, req *http.Request) {
+		accts := service.GetAccounts()
+		log.Printf("GET %s - returning list of len %d\n", req.URL.Path, len(accts))
+		jsonResponse(w, req, accts)
+	})
+	http.HandleFunc("/tweets/", func(w http.ResponseWriter, req *http.Request) {
+		acct := strings.Replace(req.URL.Path, "/tweets/", "", 1)
+		tweets := service.GetTweets(acct)
+		log.Printf("GET %s - returning list of len %d for acct %s\n", req.URL.Path, len(tweets), acct)
+		jsonResponse(w, req, service.GetTweets(acct))
+	})
+
+	// Serve static files
+	fs := http.FileServer(http.Dir("./static"))
+	http.Handle("/static/", http.StripPrefix("/static/", fs))
+
+	// Serve our application
+	http.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
+		templates := template.Must(template.ParseFiles("main.html")) //TODO: move out after debugging
+		err := templates.ExecuteTemplate(w, "main.html", nil)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+	})
+
+	if addrListen == "" {
+		log.Printf("No host specified: using default\n")
+		addrListen = "127.0.0.1:8484"
+	}
+	log.Printf("Starting listen on %s\n", addrListen)
+	http.ListenAndServe(addrListen, nil)
+
+	log.Printf("Exiting\n")
+	close(updateQuit)
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -102,41 +161,13 @@ func main() {
 	wrapped := &WrappedTwitterClient{client: client}
 	service := NewTwivilityService(wrapped, "tweetstore.gob")
 
-	if cmd == "service" {
+	if cmd == "update" {
 		service.UpdateTwitterFile()
-
-		http.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
-			io.WriteString(w, "hello, world!\n") //TODO: application
-		})
-		http.HandleFunc("/accts", func(w http.ResponseWriter, req *http.Request) {
-			accts := service.GetAccounts()
-			log.Printf("GET %s - returning list of len %d\n", req.URL.Path, len(accts))
-			jsonResponse(w, req, accts)
-		})
-		http.HandleFunc("/tweets/", func(w http.ResponseWriter, req *http.Request) {
-			acct := strings.Replace(req.URL.Path, "/tweets/", "", 1)
-			tweets := service.GetTweets(acct)
-			log.Printf("GET %s - returning list of len %d for acct %s\n", req.URL.Path, len(tweets), acct)
-			jsonResponse(w, req, service.GetTweets(acct))
-		})
-
-		// TODO: run update in the background
-
-		addrListen := *hostBinding
-		if addrListen == "" {
-			log.Printf("No host specified: using default\n")
-			addrListen = "0.0.0.0:8787"
-		}
-		log.Printf("Starting listen on %s\n", addrListen)
-		http.ListenAndServe(addrListen, nil)
-
-	} else if cmd == "update" {
-		service.UpdateTwitterFile()
-
 	} else if cmd == "dump" || cmd == "json" {
 		records := service.ReadTwitterFile()
 		fmt.Println(string(CreateTwitterJSON(records)))
-
+	} else if cmd == "service" {
+		runService(*hostBinding, service)
 	} else {
 		log.Printf("Options are service, update, or dump\n")
 	}
