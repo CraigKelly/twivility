@@ -17,6 +17,7 @@
 
 <header>
     <div class="banner">Welcome to Twivility</div>
+    <div id="working" style="display:none; float:right;"></div>
 </header>
 
 <div class="wrapper">
@@ -31,12 +32,37 @@
 <script type="text/javascript" src="/static/lodash.min.js"></script>
 
 <script type="text/javascript">
+    function getSingleAcct(acct) {
+        $.get("/tweets/" + acct)
+            .done(function(data) {
+                $("#"+acct).text(data);
+            })
+            .fail(function(e) {
+                console.log("GET Acct", acct, "FAILED:", e);
+            })
+    }
+
     $(function() {
-        _.each(['a', 'b', 'c'], function(one){
-            $(".container").append(
-                $("<p></p>").addClass("content").text(one)
-            );
-        });
+        $("#working").html("Loading...").show();
+        $.get("/accts")
+            .done(function(data) {
+                var target = $(".container");
+                _.each(data, function(acct){
+                    target.append(
+                        $('<div id="' + acct + '"></div>')
+                            .addClass("acct")
+                            .text(acct)
+                    );
+                    getSingleAcct(acct);
+                });
+            })
+            .fail(function(e) {
+                console.log("GET Accts FAILED:", e);
+                alert("Whoops");  //TODO: graceful failure
+            })
+            .always(function() {
+                $("#working").html("").hide();
+            });
     });
 </script>
 
