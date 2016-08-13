@@ -1,0 +1,61 @@
+@import url("reset.css");
+
+.color-main { color: #7A296A }
+.color-fore-light { color: #B77AAB }
+.color-fore-dark { color: #3D0031 }
+
+html {
+    font-size: 100%;
+    -ms-text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
+}
+body {
+    font-family: 'Source Sans Pro', sans-serif;
+    font-size: 16px;
+    line-height: 150%;
+    text-align: left;
+    padding: 0;
+    margin: 0;
+}
+
+header {
+    padding: 0.5em;
+    margin: 0 0 1em 0;
+    line-height: 2em;
+    font-size: 145%;
+
+    background-color: #7A296A;
+    color: #fff;
+    border-bottom: solid 2px #3D0031;
+
+    /*line-height: 50px;
+    background-image: url("../images/cropped-header.png");
+    background-position: center top;
+    background-repeat: no-repeat;
+    background-size: cover;*/
+}
+
+.wrapper,
+.container {
+    display: flex;
+    flex-direction: column;
+}
+
+.container {
+    padding: 1em;
+}
+
+.content {
+    flex: 1;
+    padding: 1em;
+    border: solid 1px #B77AAB;
+}
+
+footer {
+    border-top: solid 1px #B77AAB;
+    color: #3D0031;
+    line-height: 1.25em;
+    padding: 1em;
+    font-size: 90%;
+    margin-top: 2.5em;
+}
