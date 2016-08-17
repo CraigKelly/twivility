@@ -35,20 +35,32 @@ header {
     background-size: cover;*/
 }
 
-.wrapper,
 .container {
     display: flex;
     flex-direction: column;
-}
-
-.container {
     padding: 1em;
+    align-items: center;
+    justify-content: center;
 }
 
-.content {
+.acctPanel {
     flex: 1;
-    padding: 1em;
+    padding: 0;
+    margin: 1em;
     border: solid 1px #B77AAB;
+}
+
+.panelHeader {
+    background-color: red; /* TODO: red or blue with party colors*/
+    color: white;
+    font-weight: bold;
+    font-size: 115%;
+    padding: 1em;
+    margin: 0;
+}
+
+.panelBody {
+    padding: 1em;
 }
 
 footer {
@@ -58,4 +70,24 @@ footer {
     padding: 1em;
     font-size: 90%;
     margin-top: 2.5em;
+}
+
+/* Responsive */
+
+@media screen and (min-width: 768px) {
+    body {
+        padding: 0 5% 0 5%;
+    }
+
+    .container {
+        max-width: 98%;
+        flex-direction: row;
+        flex-flow: row wrap;
+        align-items: flex-start;
+        justify-content: flex-start;
+    }
+
+    .acctPanel {
+        flex-basis: 40%;
+    }
 }

@@ -98,9 +98,15 @@ func runService(addrListen string, service *TwivilityService) {
 	fs := http.FileServer(http.Dir("./static"))
 	http.Handle("/static/", http.StripPrefix("/static/", fs))
 
+	funcMap := template.FuncMap{
+		"Year": func() string { return time.Now().Format("2006") },
+	}
+
 	// Serve our application
 	http.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
-		templates := template.Must(template.ParseFiles("main.html")) //TODO: move out after debugging
+		//TODO: move out after debugging
+		templates := template.Must(template.New("ui").Funcs(funcMap).ParseFiles("main.html"))
+
 		err := templates.ExecuteTemplate(w, "main.html", nil)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)

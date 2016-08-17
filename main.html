@@ -21,48 +21,53 @@
 </header>
 
 <div class="wrapper">
-    <div class="container">
-        TODO: header stuff
+    <div class="container" id="mainData">
     </div>
 </div>
 
-<footer>TODO: footer stuff</footer>
+<footer>
+    <p>Twivility is copyright {{Year}}</p>
+    <p><strong>All tweets were written by someone else. This is not an endorsement.</strong></p>
+</footer>
 
 <script type="text/javascript" src="/static/jquery-3.1.0.min.js"></script>
 <script type="text/javascript" src="/static/lodash.min.js"></script>
+<script type="text/javascript" src="/static/twivility.js"></script>
+
+<script type="text/template" class="acctTemplate">
+    <div class="acctPanel" id="<%= ctx.acct%>">
+        <div class="panelHeader">@<%= ctx.acct%></div>
+        <div class="panelBody">
+            <% _.forEach(ctx.tweets, function(tweet) { %>
+                <p><%= tweet.Timestamp%>:<%- tweet.Text%></p>
+            <% }); %>
+        </div>
+    </div>
+</script>
 
 <script type="text/javascript">
-    function getSingleAcct(acct) {
-        $.get("/tweets/" + acct)
-            .done(function(data) {
-                $("#"+acct).text(data);
-            })
-            .fail(function(e) {
-                console.log("GET Acct", acct, "FAILED:", e);
-            })
+    var acctTemplate = _.template(
+        $("script.acctTemplate").html(),
+        { 'variable': 'ctx' }
+    );
+
+    function recvAcctTweets(acct, tweets) {
+        $("#" + acct).remove();  //Special: we know this from the template
+        $("#mainData").append(acctTemplate({
+            'acct': acct,
+            'tweets': tweets
+        }));
+    }
+
+    function refreshAll() {
+        $("#working").html("Loading...").show();
+        GetAllAccts(recvAcctTweets).always(function() {
+            $("#working").html("").hide();
+        });
     }
 
     $(function() {
-        $("#working").html("Loading...").show();
-        $.get("/accts")
-            .done(function(data) {
-                var target = $(".container");
-                _.each(data, function(acct){
-                    target.append(
-                        $('<div id="' + acct + '"></div>')
-                            .addClass("acct")
-                            .text(acct)
-                    );
-                    getSingleAcct(acct);
-                });
-            })
-            .fail(function(e) {
-                console.log("GET Accts FAILED:", e);
-                alert("Whoops");  //TODO: graceful failure
-            })
-            .always(function() {
-                $("#working").html("").hide();
-            });
+        refreshAll();
     });
 </script>
 
