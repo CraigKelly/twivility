@@ -48,6 +48,9 @@ def cmd(cl, *args):
 def main():
     """Entry point."""
     os.chdir(rel_path(".."))
+
+    cmd("godep save")
+
     for dep in all_deps():
         target = dep["ImportPath"]
         if '/vendor/' in target:
@@ -55,6 +58,7 @@ def main():
             continue
         cmd("go get -u %s", target)
         cmd("godep update %s", target)
+
     print("")
     print("You should check `git diff` and then commit")
 
