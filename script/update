@@ -1,0 +1,63 @@
+#!/usr/bin/env python3
+
+"""Simple updater for our godep project."""
+
+import inspect
+import json
+import os
+import subprocess
+import sys
+
+pth = os.path
+
+
+FILE_PATH = inspect.getabsfile(lambda i: i)
+SCRIPT_DIR = pth.dirname(FILE_PATH)
+
+
+def rel_path(rel):
+    """Return a path relative to this script's dir."""
+    return pth.abspath(pth.join(SCRIPT_DIR, rel))
+
+
+def all_deps():
+    """Generator that finds all deps in the Godeps file."""
+    with open(rel_path("../Godeps/Godeps.json")) as f:
+        data = f.read()
+    for d in json.loads(data).get('Deps', list()):
+        yield d
+
+
+def flush():
+    """Flush and sync to keep everything straight."""
+    sys.stdout.flush()
+    sys.stderr.flush()
+    os.sync()
+
+
+def cmd(cl, *args):
+    """Run command-line, possibly with string interpolation."""
+    if args:
+        cl = cl % args
+    print(cl)
+    flush()
+    return subprocess.call(cl.split(' '))
+    flush()
+
+
+def main():
+    """Entry point."""
+    os.chdir(rel_path(".."))
+    for dep in all_deps():
+        target = dep["ImportPath"]
+        if '/vendor/' in target:
+            print("Skipping: %s" % target)
+            continue
+        cmd("go get -u %s", target)
+        cmd("godep update %s", target)
+    print("")
+    print("You should check `git diff` and then commit")
+
+
+if __name__ == "__main__":
+    main()

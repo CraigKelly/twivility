@@ -2,6 +2,7 @@ package sling
 
 import (
 	"bytes"
+	"encoding/base64"
 	"encoding/json"
 	"io"
 	"io/ioutil"
@@ -18,10 +19,17 @@ const (
 	formContentType = "application/x-www-form-urlencoded"
 )
 
+// Doer executes http requests.  It is implemented by *http.Client.  You can
+// wrap *http.Client with layers of Doers to form a stack of client-side
+// middleware.
+type Doer interface {
+	Do(req *http.Request) (*http.Response, error)
+}
+
 // Sling is an HTTP Request builder and sender.
 type Sling struct {
 	// http Client for doing requests
-	httpClient *http.Client
+	httpClient Doer
 	// HTTP method (GET, POST, etc.)
 	method string
 	// raw url string for requests
@@ -84,9 +92,18 @@ func (s *Sling) New() *Sling {
 // the http.DefaultClient will be used.
 func (s *Sling) Client(httpClient *http.Client) *Sling {
 	if httpClient == nil {
+		return s.Doer(http.DefaultClient)
+	}
+	return s.Doer(httpClient)
+}
+
+// Doer sets the custom Doer implementation used to do requests.
+// If a nil client is given, the http.DefaultClient will be used.
+func (s *Sling) Doer(doer Doer) *Sling {
+	if doer == nil {
 		s.httpClient = http.DefaultClient
 	} else {
-		s.httpClient = httpClient
+		s.httpClient = doer
 	}
 	return s
 }
@@ -143,6 +160,20 @@ func (s *Sling) Add(key, value string) *Sling {
 func (s *Sling) Set(key, value string) *Sling {
 	s.header.Set(key, value)
 	return s
+}
+
+// SetBasicAuth sets the Authorization header to use HTTP Basic Authentication
+// with the provided username and password. With HTTP Basic Authentication
+// the provided username and password are not encrypted.
+func (s *Sling) SetBasicAuth(username, password string) *Sling {
+	return s.Set("Authorization", "Basic "+basicAuth(username, password))
+}
+
+// basicAuth returns the base64 encoded username:password for basic auth copied
+// from net/http.
+func basicAuth(username, password string) string {
+	auth := username + ":" + password
+	return base64.StdEncoding.EncodeToString([]byte(auth))
 }
 
 // Url

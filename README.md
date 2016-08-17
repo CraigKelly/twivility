@@ -1,6 +1,6 @@
-# Twvility README
+# Twivility README
 
-This is the twvility.com project.
+This is the twivility.com project.
 
 ## Quick intro
 
@@ -13,22 +13,23 @@ package manager, we'll switch to that.
 
 To save dependencies: `godep save` and then commit to repo
 
-We provide four helpful scripts:
+We provide helpful scripts in the scripts directory:
 
-* `./test` - properly runs `godep go test` and includes the CL parameters we
+* `test` - properly runs `godep go test` and includes the CL parameters we
    want. Accepts parameters to pass to `godep go test` (they do *not* override
    the default parameters)
-* `./cover` - uses `./test` to get source code coverage and then display the
+* `cover` - uses `test` to get source code coverage and then display the
    HTML report. Notice that we use the build tag "test" to exclude main.go from
    unit tests *and* from coverage.
-* `./build` - build twivility. We include the build date/time for display on
+* `build` - build twivility. We include the build date/time for display on
    startup. Note that we do *not* do `go install`
-* `./run` - Run the binary built by `./build`, but first source the file
-   `./authed` which you must create (see below)
+* `run` - Run the binary built by `build`, but first source the file
+   `authed` which you must create (see below)
+* `update` - Parse Godeps.json and then update them. Requires Python3
 
-## ./authed
+## authed
 
-You will need to create the `./authed` script yourself. A starter script
+You will need to create the `authed` script yourself. A starter script
 looks like this:
 
 ````bash

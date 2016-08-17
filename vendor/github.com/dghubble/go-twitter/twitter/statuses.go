@@ -10,7 +10,6 @@ import (
 // Tweet represents a Twitter Tweet, previously called a status.
 // https://dev.twitter.com/overview/api/tweets
 // Unused or deprecated fields not provided: Geo, Annotations
-// TODO: Place
 type Tweet struct {
 	Contributors         []Contributor          `json:"contributors"`
 	Coordinates          *Coordinates           `json:"coordinates"`
@@ -35,6 +34,7 @@ type Tweet struct {
 	Source               string                 `json:"source"`
 	Scopes               map[string]interface{} `json:"scopes"`
 	Text                 string                 `json:"text"`
+	Place                *Place                 `json:"place"`
 	Truncated            bool                   `json:"truncated"`
 	User                 *User                  `json:"user"`
 	WithheldCopyright    bool                   `json:"withheld_copyright"`
@@ -44,6 +44,29 @@ type Tweet struct {
 	QuotedStatusID       int64                  `json:"quoted_status_id"`
 	QuotedStatusIDStr    string                 `json:"quoted_status_id_str"`
 	QuotedStatus         *Tweet                 `json:"quoted_status"`
+}
+
+// Place represents a Twitter Place / Location
+// https://dev.twitter.com/overview/api/places
+type Place struct {
+	Attributes  map[string]string `json:"attributes"`
+	BoundingBox *BoundingBox      `json:"bounding_box"`
+	Country     string            `json:"country"`
+	CountryCode string            `json:"country_code"`
+	FullName    string            `json:"full_name"`
+	Geometry    *BoundingBox      `json:"geometry"`
+	ID          string            `json:"id"`
+	Name        string            `json:"name"`
+	PlaceType   string            `json:"place_type"`
+	Polylines   []string          `json:"polylines"`
+	URL         string            `json:"url"`
+}
+
+// BoundingBox represents the bounding coordinates (longitude, latitutde)
+// defining the bounds of a box containing a Place entity.
+type BoundingBox struct {
+	Coordinates [][][2]float64 `json:"coordinates"`
+	Type        string         `json:"type"`
 }
 
 // Contributor represents a brief summary of a User identifiers.
