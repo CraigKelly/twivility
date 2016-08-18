@@ -18,6 +18,7 @@ import (
 	"github.com/dghubble/oauth1"
 )
 
+// TODO: switch from private to public on GitHub!
 // TODO: we'll probably want to use extractEntitiesWithIndices from twitter-text on the client
 // TODO: ADMINS - web service giving stats on file contents - extra file Options
 // TODO: ADMINS - web service can be prompted to update, and also has a scheduled update
