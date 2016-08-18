@@ -2,6 +2,9 @@
 
 This is the twivility.com project.
 
+***IMPORTANT!*** The UI is incomplete and does nothing. You will be disappointed
+if you try this software right now. It will be done(-ish) soon
+
 ## Quick intro
 
 We are using godep so, yes, we commit the vendor directory to git. This isn't
