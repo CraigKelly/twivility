@@ -19,6 +19,7 @@ import (
 )
 
 // TODO: we'll probably want to use extractEntitiesWithIndices from twitter-text on the client
+// TODO: when we can get the file for SlangSD we can try some sentiment ratings
 // TODO: ADMINS - web service giving stats on file contents - extra file Options
 // TODO: ADMINS - web service can be prompted to update, and also has a scheduled update
 
