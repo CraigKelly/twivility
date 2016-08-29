@@ -14,9 +14,15 @@ package manager, we'll switch to that.
 
 ## Tools
 
-To save dependencies: `godep save` and then commit to repo
+We manage dependencies with godep. See below for the helper scripts in the
+`./scripts` directory.
 
-We provide helpful scripts in the scripts directory:
+You can also use the `Makefile` in this directory. There is a make target
+corresponding to each script name. The default target is `build` - it is
+dependent on `test` so running `make` will usually do the right thing.
+Note that `cover` always re-runs unit tests.
+
+We provide helpful scripts in the scripts directory.
 
 * `test` - properly runs `godep go test` and includes the CL parameters we
    want. Accepts parameters to pass to `godep go test` (they do *not* override
