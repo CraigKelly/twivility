@@ -5,6 +5,11 @@ This is the twivility.com project.
 ***IMPORTANT!*** The UI is incomplete and does nothing. You will be disappointed
 if you try this software right now. It will be done(-ish) soon
 
+Until then, there is no license file. It is expected that this code will be released
+under the MIT license (or possibly GPL v3). If you need licensing before then, what
+are you thinking using pre-pre-alpha software? If you're really sure, open an Issue
+here and I'll fix the situation ASAP.
+
 ## Quick intro
 
 We are using godep so, yes, we commit the vendor directory to git. This isn't
