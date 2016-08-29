@@ -1,5 +1,5 @@
 {
-	"ImportPath": "bart/twivility",
+	"ImportPath": "github.com/CraigKelly/twivility",
 	"GoVersion": "go1.7",
 	"GodepVersion": "v74",
 	"Deps": [
@@ -20,17 +20,17 @@
 		},
 		{
 			"ImportPath": "github.com/dghubble/go-twitter/twitter",
-			"Rev": "3cfcd4463840e215f071d9b261e96ceeff567d95"
+			"Rev": "536f41ba9ebcee721411517767a6f56b54b4ab65"
 		},
 		{
 			"ImportPath": "github.com/dghubble/oauth1",
-			"Comment": "v0.4.0-1-gb61f9f4",
-			"Rev": "b61f9f49ca0b822c9c681186ce83bed924c98e56"
+			"Comment": "v0.4.0-2-gd9f4856",
+			"Rev": "d9f485600d309576dfa9764424f537e1f254d9a1"
 		},
 		{
 			"ImportPath": "github.com/dghubble/sling",
-			"Comment": "v1.0-22-g9da07f0",
-			"Rev": "9da07f0db0226d82803fc7374dba08506d29da00"
+			"Comment": "v1.0-23-g52e88a7",
+			"Rev": "52e88a7b75a5db3b49f8911f16d49d9b7b67adc5"
 		},
 		{
 			"ImportPath": "github.com/google/go-querystring/query",
@@ -48,7 +48,7 @@
 		},
 		{
 			"ImportPath": "golang.org/x/net/context",
-			"Rev": "07b51741c1d6423d4a6abab1c49940ec09cb1aaf"
+			"Rev": "6250b412798208e6c90b03b7c4f226de5aa299e2"
 		},
 		{
 			"ImportPath": "github.com/stretchr/testify/vendor/github.com/davecgh/go-spew/spew",
