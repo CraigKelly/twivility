@@ -11,7 +11,7 @@ TESTED=.tested
 
 $(BINARY): $(SOURCES) $(TESTED)
 	$(TOOLDIR)/build
-build: $(binary)
+build: $(BINARY)
 
 clean:
 	rm -f $(BINARY) debug debug.test cover.out $(TESTED)
