@@ -48,7 +48,7 @@
 		},
 		{
 			"ImportPath": "golang.org/x/net/context",
-			"Rev": "9bc2a3340c92c17a20edcd0080e93851ed58f5d5"
+			"Rev": "1358eff22f0dd0c54fc521042cc607f6ff4b531a"
 		},
 		{
 			"ImportPath": "github.com/stretchr/testify/vendor/github.com/davecgh/go-spew/spew",
