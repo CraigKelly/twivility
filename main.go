@@ -93,18 +93,18 @@ func runService(addrListen string, service *TwivilityService) {
 		acct := strings.Replace(req.URL.Path, "/tweets/", "", 1)
 		tweets := service.GetTweets(acct)
 		log.Printf("GET %s - returning list of len %d for acct %s\n", req.URL.Path, len(tweets), acct)
-		jsonResponse(w, req, service.GetTweets(acct))
+		jsonResponse(w, req, tweets)
 	})
 
 	// Serve static files
 	fs := http.FileServer(http.Dir("./static"))
 	http.Handle("/static/", http.StripPrefix("/static/", fs))
 
+	// Serve our application
 	funcMap := template.FuncMap{
 		"Year": func() string { return time.Now().Format("2006") },
 	}
 
-	// Serve our application
 	http.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
 		//TODO: move out after debugging
 		templates := template.Must(template.New("ui").Funcs(funcMap).ParseFiles("main.html"))
