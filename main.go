@@ -18,7 +18,6 @@ import (
 	"github.com/dghubble/oauth1"
 )
 
-// TODO: optimize tweet storage so we're not linear searching EVERYTHING
 // TODO: send back processed tweets via github.com/kylemcc/twitter-text-go/extract
 // TODO: when we can get the file for SlangSD we can try some sentiment ratings
 // TODO: ADMINS - web service giving stats on file contents - extra file Options

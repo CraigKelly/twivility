@@ -2,7 +2,6 @@ package main
 
 import (
 	"log"
-	"strings"
 	"sync"
 
 	"github.com/dghubble/go-twitter/twitter"
@@ -20,6 +19,7 @@ type TwivilityService struct {
 	client        TwitterClient
 	dataFileName  string
 	currentTweets TweetFileRecordSlice
+	tweetMap      map[string]TweetFileRecordSlice
 	tweetStoreMtx sync.RWMutex
 }
 
@@ -27,6 +27,20 @@ type TwivilityService struct {
 // how a full client for Twitter is created
 func NewTwivilityService(client TwitterClient, dataFileName string) *TwivilityService {
 	return &TwivilityService{client: client, dataFileName: dataFileName}
+}
+
+// updateTweetMap recreates service.tweetMap
+// IMPORTANT! This function assumes that it does NOT need to worry about
+// tweetStoreMtx. Only call while service.tweetStoreMtx.Lock() is active
+func (service *TwivilityService) updateTweetMap() {
+	service.tweetMap = make(map[string]TweetFileRecordSlice)
+	for _, tweet := range service.currentTweets {
+		list, inMap := service.tweetMap[tweet.UserScreenName]
+		if !inMap {
+			list = make(TweetFileRecordSlice, 0, len(service.currentTweets)/4)
+		}
+		service.tweetMap[tweet.UserScreenName] = append(list, tweet)
+	}
 }
 
 // ReadTwitterFile returns all records in our current twitter data store
@@ -37,6 +51,8 @@ func (service *TwivilityService) ReadTwitterFile() TweetFileRecordSlice {
 
 	TouchFile(service.dataFileName) // Make sure at least empty file exists
 	service.currentTweets = ReadTwitterFile(service.dataFileName)
+	service.updateTweetMap()
+
 	log.Printf("Read %d records from %s\n", len(service.currentTweets), service.dataFileName)
 	return service.currentTweets
 }
@@ -109,6 +125,7 @@ func (service *TwivilityService) UpdateTwitterFile() (int, error) {
 	log.Printf("Added %d records: rewriting file %s\n", totalAdded, service.dataFileName)
 	existing.WriteTwitterFile(service.dataFileName)
 	service.currentTweets = existing
+	service.updateTweetMap()
 	return totalAdded, nil
 }
 
@@ -117,14 +134,9 @@ func (service *TwivilityService) GetAccounts() []string {
 	service.tweetStoreMtx.RLock()
 	defer service.tweetStoreMtx.RUnlock()
 
-	ids := make(map[int64]bool)
 	accts := make([]string, 0, 4)
-
-	for _, tweet := range service.currentTweets {
-		if _, seen := ids[tweet.UserID]; !seen {
-			ids[tweet.UserID] = true
-			accts = append(accts, tweet.UserScreenName)
-		}
+	for acct := range service.tweetMap {
+		accts = append(accts, acct)
 	}
 
 	return accts
@@ -135,11 +147,11 @@ func (service *TwivilityService) GetTweets(acct string) TweetFileRecordSlice {
 	service.tweetStoreMtx.RLock()
 	defer service.tweetStoreMtx.RUnlock()
 
-	results := make(TweetFileRecordSlice, 0, len(service.currentTweets)/4)
-	for _, tweet := range service.currentTweets {
-		if strings.EqualFold(tweet.UserScreenName, acct) { // case insensitive
-			results = append(results, tweet)
-		}
+	list, inMap := service.tweetMap[acct]
+	if !inMap {
+		log.Printf("No map entry found for acct %v", acct)
+		return make(TweetFileRecordSlice, 0, 0)
 	}
-	return results
+
+	return list
 }
