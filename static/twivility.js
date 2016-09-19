@@ -82,6 +82,7 @@
             })
             .fail(function(e) {
                 console.log("GET Acct", acct, "FAILED:", e);
+                //TODO: graceful failure
             });
     }
 
