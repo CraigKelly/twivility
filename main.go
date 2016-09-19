@@ -99,7 +99,7 @@ func runService(addrListen string, service *TwivilityService) {
 	fs := http.FileServer(http.Dir("./static"))
 	http.Handle("/static/", http.StripPrefix("/static/", fs))
 
-	// Serve our application
+	// provide some functions to our templates
 	funcMap := template.FuncMap{
 		"Year": func() string { return time.Now().Format("2006") },
 	}

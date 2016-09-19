@@ -62,7 +62,6 @@ func (cli *TestTwitterClient) RetrieveHomeTimeline(count int, since int64, max i
 	return tweets, nil
 }
 
-// TestSieve - simple unit testing for our prime factoring function
 func TestTwitterFileIO(t *testing.T) {
 	assert := assert.New(t)
 
