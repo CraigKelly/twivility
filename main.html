@@ -74,13 +74,10 @@
         'mike_pence': 4,
     };
     function sortXlate(acct) {
-        var ret = sortVals[_.trim(acct).toLowerCase()] || 10000;
-        console.log("SORT VAL:", acct, "==", ret);
-        return ret;
+        return sortVals[_.trim(acct).toLowerCase()] || 10000;
     }
 
     function acctTweetsFinished() {
-        console.log("Sorting DIV's!");
         var parent = $("#mainData");
         var items = parent.children(".acctPanel").sort(function(a, b){
             var lhs = sortXlate($(a).attr('id'));
