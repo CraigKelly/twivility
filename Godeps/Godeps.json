@@ -5,8 +5,8 @@
 	"Deps": [
 		{
 			"ImportPath": "github.com/cenkalti/backoff",
-			"Comment": "v1.0.0-7-gcdf48bb",
-			"Rev": "cdf48bbc1eb78d1349cbda326a4a037f7ba565c6"
+			"Comment": "v1.0.0-14-g8edc80b",
+			"Rev": "8edc80b07f38c27352fb186d971c628a6c32552b"
 		},
 		{
 			"ImportPath": "github.com/coreos/pkg/flagutil",
@@ -15,8 +15,8 @@
 		},
 		{
 			"ImportPath": "github.com/davecgh/go-spew/spew",
-			"Comment": "v1.0.0",
-			"Rev": "6cf5744a041a0022271cefed95ba843f6d87fd51"
+			"Comment": "v1.0.0-3-g6d21280",
+			"Rev": "6d212800a42e8ab5c146b8ace3490ee17e5225f9"
 		},
 		{
 			"ImportPath": "github.com/dghubble/go-twitter/twitter",
@@ -24,8 +24,8 @@
 		},
 		{
 			"ImportPath": "github.com/dghubble/oauth1",
-			"Comment": "v0.4.0-2-gd9f4856",
-			"Rev": "d9f485600d309576dfa9764424f537e1f254d9a1"
+			"Comment": "v0.4.0-9-g955bdf2",
+			"Rev": "955bdf2cd60166890d532846c81346d01e8a8d35"
 		},
 		{
 			"ImportPath": "github.com/dghubble/sling",
@@ -48,7 +48,7 @@
 		},
 		{
 			"ImportPath": "golang.org/x/net/context",
-			"Rev": "1358eff22f0dd0c54fc521042cc607f6ff4b531a"
+			"Rev": "71a035914f99bb58fe82eac0f1289f10963d876c"
 		},
 		{
 			"ImportPath": "github.com/stretchr/testify/vendor/github.com/davecgh/go-spew/spew",
