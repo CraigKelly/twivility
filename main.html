@@ -55,13 +55,44 @@
         $("#" + acct).remove();  //Special: we know this from the template
         $("#mainData").append(acctTemplate({
             'acct': acct,
-            'tweets': tweets
+            'tweets': [_.first(tweets), _.last(tweets)]
         }));
+
+        var headerType = null;
+        if      (_.isLefty(acct))  headerType = "lefty";
+        else if (_.isRighty(acct)) headerType = "righty";
+
+        if (headerType) {
+            $("#" + acct).find(".panelHeader").addClass(headerType);
+        }
+    }
+
+    var sortVals = {
+        'hillaryclinton': 1,
+        'realdonaldtrump': 2,
+        'timkaine': 3,
+        'mike_pence': 4,
+    };
+    function sortXlate(acct) {
+        var ret = sortVals[_.trim(acct).toLowerCase()] || 10000;
+        console.log("SORT VAL:", acct, "==", ret);
+        return ret;
+    }
+
+    function acctTweetsFinished() {
+        console.log("Sorting DIV's!");
+        var parent = $("#mainData");
+        var items = parent.children(".acctPanel").sort(function(a, b){
+            var lhs = sortXlate($(a).attr('id'));
+            var rhs = sortXlate($(b).attr('id'));
+            return (lhs < rhs) ? -1 : (lhs > rhs) ? 1 : 0;
+        });
+        parent.append(items);
     }
 
     function refreshAll() {
         $("#working").html("Loading...").show();
-        GetAllAccts(recvAcctTweets).always(function() {
+        GetAllAccts(recvAcctTweets, acctTweetsFinished).always(function() {
             $("#working").html("").hide();
         });
     }
