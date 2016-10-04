@@ -24,6 +24,8 @@ type TweetFileRecord struct {
 	UserName       string
 	Text           string
 	Timestamp      string
+	FavoriteCount  int
+	RetweetCount   int
 }
 
 // TweetFileRecordSlice is a slice of TweetFileRecords

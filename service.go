@@ -98,6 +98,8 @@ func (service *TwivilityService) UpdateTwitterFile() (int, error) {
 					UserScreenName: tweet.User.ScreenName,
 					Text:           tweet.Text,
 					Timestamp:      tweet.CreatedAt,
+					FavoriteCount:  tweet.FavoriteCount,
+					RetweetCount:   tweet.RetweetCount,
 				}
 				existing = append(existing, newRec)
 				seen[tweetID] = true
@@ -112,13 +114,17 @@ func (service *TwivilityService) UpdateTwitterFile() (int, error) {
 		}
 
 		totalAdded += addCount
+		if totalAdded > 2000 {
+			break // Totaly arbitrary - don't get more than 2K at a time
+		}
+
 		if len(seen) == preSeen {
 			break // Nothing new or don't know how to continue
 		}
 
 		qMax = batchMin
-		if qMax <= qSince+1 || qSince < 1 {
-			break // Nothing left to find or only one query allowed
+		if qMax <= qSince+1 {
+			break // Nothing left to find
 		}
 	}
 
