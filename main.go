@@ -18,7 +18,7 @@ import (
 	"github.com/dghubble/oauth1"
 )
 
-// TODO: send back processed tweets via github.com/kylemcc/twitter-text-go/extract
+// TODO: need to actually keep parsed entities
 // TODO: when we can get the file for SlangSD we can try some sentiment ratings
 // TODO: ADMINS - web service giving stats on file contents - extra file Options
 // TODO: ADMINS - web service can be prompted to update, and also has a scheduled update
