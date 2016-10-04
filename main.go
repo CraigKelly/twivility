@@ -70,6 +70,7 @@ func runService(addrListen string, service *TwivilityService) {
 	// Make sure to update the tweets every 5 minutes
 	updateTicker := time.NewTicker(5 * time.Minute)
 	updateQuit := make(chan struct{})
+	defer close(updateQuit)
 	go func() {
 		for {
 			select {
@@ -122,7 +123,6 @@ func runService(addrListen string, service *TwivilityService) {
 	http.ListenAndServe(addrListen, nil)
 
 	log.Printf("Exiting\n")
-	close(updateQuit)
 }
 
 /////////////////////////////////////////////////////////////////////////////
