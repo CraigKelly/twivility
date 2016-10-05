@@ -28,6 +28,8 @@ func (cli *TestTwitterClient) RetrieveHomeTimeline(count int, since int64, max i
 		42:  "CoolUser",
 	}
 
+	// TODO: incle some hashtags and user mentions
+
 	tweets := make([]twitter.Tweet, 0, 8)
 	tcounter := 0
 
