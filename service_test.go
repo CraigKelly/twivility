@@ -50,6 +50,12 @@ func (cli *TestTwitterClient) RetrieveHomeTimeline(count int, since int64, max i
 				Name:       users[uid],
 				ScreenName: "@" + users[uid],
 			},
+			Entities: &twitter.Entities{
+				Hashtags:     make([]twitter.HashtagEntity, 0),
+				Media:        make([]twitter.MediaEntity, 0),
+				Urls:         make([]twitter.URLEntity, 0),
+				UserMentions: make([]twitter.MentionEntity, 0),
+			},
 		}
 		tweets = append(tweets, tweet)
 	}

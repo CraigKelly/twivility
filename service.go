@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"strings"
 	"sync"
 
 	"github.com/dghubble/go-twitter/twitter"
@@ -40,6 +41,44 @@ func (service *TwivilityService) updateTweetMap() {
 			list = make(TweetFileRecordSlice, 0, len(service.currentTweets)/4)
 		}
 		service.tweetMap[tweet.UserScreenName] = append(list, tweet)
+	}
+}
+
+func firstNonBlank(candidates ...string) string {
+	for _, s := range candidates {
+		t := strings.Trim(s, " ")
+		if len(t) > 0 {
+			return t
+		}
+	}
+	return ""
+}
+
+func extractTweet(tweet twitter.Tweet) TweetFileRecord {
+	hashtags := make([]string, len(tweet.Entities.Hashtags))
+	for _, ht := range tweet.Entities.Hashtags {
+		hashtags = append(hashtags, ht.Text)
+	}
+
+	mentions := make([]string, len(tweet.Entities.UserMentions))
+	for _, m := range tweet.Entities.UserMentions {
+		txt := firstNonBlank(m.ScreenName, m.Name, m.IDStr)
+		if len(txt) > 0 {
+			mentions = append(mentions, txt)
+		}
+	}
+
+	return TweetFileRecord{
+		TweetID:        tweet.ID,
+		UserID:         tweet.User.ID,
+		UserName:       tweet.User.Name,
+		UserScreenName: tweet.User.ScreenName,
+		Text:           tweet.Text,
+		Timestamp:      tweet.CreatedAt,
+		FavoriteCount:  tweet.FavoriteCount,
+		RetweetCount:   tweet.RetweetCount,
+		Hashtags:       hashtags,
+		Mentions:       mentions,
 	}
 }
 
@@ -89,27 +128,15 @@ func (service *TwivilityService) UpdateTwitterFile() (int, error) {
 		batchMin := int64(0)
 		for _, tweet := range tweets {
 			tweetID := tweet.ID
-			if _, inMap := seen[tweet.ID]; !inMap {
+			if _, inMap := seen[tweetID]; !inMap {
 				// New ID!
-				newRec := TweetFileRecord{
-					TweetID:        tweetID,
-					UserID:         tweet.User.ID,
-					UserName:       tweet.User.Name,
-					UserScreenName: tweet.User.ScreenName,
-					Text:           tweet.Text,
-					Timestamp:      tweet.CreatedAt,
-					FavoriteCount:  tweet.FavoriteCount,
-					RetweetCount:   tweet.RetweetCount,
-				}
+				newRec := extractTweet(tweet)
 				existing = append(existing, newRec)
 				seen[tweetID] = true
 				addCount++
-
 				if tweetID < batchMin || batchMin == 0 {
 					batchMin = tweetID
 				}
-
-				// log.Printf("Added tweet: %v\n", newRec.TweetID)
 			}
 		}
 
