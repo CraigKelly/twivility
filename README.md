@@ -2,13 +2,14 @@
 
 This is the twivility.com project.
 
-***IMPORTANT!*** The UI is incomplete and does nothing. You will be disappointed
-if you try this software right now. It will be done(-ish) soon
+***IMPORTANT!*** The UI is incomplete and does nothing. You will be
+disappointed if you try this software right now. Work is proceeding - do not
+despair!
 
-Until then, there is no license file. It is expected that this code will be released
-under the MIT license (or possibly GPL v3). If you need licensing before then, what
-are you thinking using pre-pre-alpha software? If you're really sure, open an Issue
-here and I'll fix the situation ASAP.
+Until then, there is no license file. The plan is to release the code under
+the MIT license (or possibly GPL v3). If you need licensing before then, what
+are you thinking using pre-pre-alpha software? If you're sure, open an Issue
+here and I'll fix the situation.
 
 ## Quick intro
 
@@ -23,9 +24,9 @@ We manage dependencies with godep. See below for the helper scripts in the
 `./scripts` directory.
 
 You can also use the `Makefile` in this directory. There is a make target
-corresponding to each script name. The default target is `build` - it is
-dependent on `test` so running `make` will usually do the right thing.
-Note that `cover` always re-runs unit tests.
+corresponding to each script name. The default target is `build`, which is
+dependent on `test` so running `make` should do the right thing. Note that
+`cover` always re-runs unit tests.
 
 We provide helpful scripts in the scripts directory.
 
