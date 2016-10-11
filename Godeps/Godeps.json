@@ -29,8 +29,8 @@
 		},
 		{
 			"ImportPath": "github.com/dghubble/sling",
-			"Comment": "v1.0-23-g52e88a7",
-			"Rev": "52e88a7b75a5db3b49f8911f16d49d9b7b67adc5"
+			"Comment": "v1.0-28-gc961a43",
+			"Rev": "c961a4334054e64299d16f8a31bd686ee2565ae4"
 		},
 		{
 			"ImportPath": "github.com/google/go-querystring/query",
@@ -48,7 +48,7 @@
 		},
 		{
 			"ImportPath": "golang.org/x/net/context",
-			"Rev": "ffe101cce3477a6c6d8f0754d103bb0a84ec1266"
+			"Rev": "cf4effbb9db1f3ef07f7e1891402991b6afbb276"
 		},
 		{
 			"ImportPath": "github.com/stretchr/testify/vendor/github.com/davecgh/go-spew/spew",
