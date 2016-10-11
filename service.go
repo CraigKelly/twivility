@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"regexp"
 	"strings"
 	"sync"
 
@@ -44,6 +45,7 @@ func (service *TwivilityService) updateTweetMap() {
 	}
 }
 
+// Return the first string that is more than just spaces
 func firstNonBlank(candidates ...string) string {
 	for _, s := range candidates {
 		t := strings.Trim(s, " ")
@@ -54,31 +56,46 @@ func firstNonBlank(candidates ...string) string {
 	return ""
 }
 
-func extractTweet(tweet twitter.Tweet) TweetFileRecord {
-	hashtags := make([]string, 0, len(tweet.Entities.Hashtags))
-	for _, ht := range tweet.Entities.Hashtags {
-		hashtags = append(hashtags, ht.Text)
-	}
-
-	mentions := make([]string, 0, len(tweet.Entities.UserMentions))
-	for _, m := range tweet.Entities.UserMentions {
-		txt := firstNonBlank(m.ScreenName, m.Name, m.IDStr)
+// Return all trimmed strings that are more than just spaces
+func allNonBlank(results []string) []string {
+	filtered := make([]string, 0, len(results))
+	for _, txt := range results {
+		txt = strings.TrimSpace(txt)
 		if len(txt) > 0 {
-			mentions = append(mentions, txt)
+			filtered = append(filtered, txt)
 		}
 	}
+	return filtered
+}
 
+// We use our own hacky hastag and mention matching
+var hashtagMatch = regexp.MustCompile(`#\w+\b`)
+var userMatch = regexp.MustCompile(`@\w+\b`)
+
+// Build our nice record from the 'actual' API record
+func extractTweet(tweet twitter.Tweet) TweetFileRecord {
+	txt := tweet.Text
+	isRetweet := false
+	if tweet.RetweetedStatus != nil && len(tweet.RetweetedStatus.Text) > 0 {
+		// Use the actual retweed text since twitter likes to trunc the text
+		// in the RT
+		txt = tweet.RetweetedStatus.Text
+		isRetweet = true
+	}
+
+	// Note that we manually match the entities we want
 	return TweetFileRecord{
 		TweetID:        tweet.ID,
 		UserID:         tweet.User.ID,
 		UserName:       tweet.User.Name,
 		UserScreenName: tweet.User.ScreenName,
-		Text:           tweet.Text,
+		Text:           txt,
 		Timestamp:      tweet.CreatedAt,
 		FavoriteCount:  tweet.FavoriteCount,
 		RetweetCount:   tweet.RetweetCount,
-		Hashtags:       hashtags,
-		Mentions:       mentions,
+		Hashtags:       allNonBlank(hashtagMatch.FindAllString(txt, -1)),
+		Mentions:       allNonBlank(userMatch.FindAllString(txt, -1)),
+		IsRetweet:      isRetweet,
 	}
 }
 
@@ -141,7 +158,7 @@ func (service *TwivilityService) UpdateTwitterFile() (int, error) {
 		}
 
 		totalAdded += addCount
-		if totalAdded > 2000 {
+		if totalAdded > 700 {
 			break // Totaly arbitrary - don't get more than 2K at a time
 		}
 

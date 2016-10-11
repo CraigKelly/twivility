@@ -40,6 +40,9 @@
         <div class="panelBody">
             <% _.forEach(ctx.tweets, function(tweet) { %>
                 <p><%= tweet.Timestamp%>:<%- tweet.Text%></p>
+                <p>Mentions:<%= tweet.Mentions%></p>
+                <p>Hashtags:<%= tweet.Hashtags%></p>
+                <hr />
             <% }); %>
         </div>
     </div>

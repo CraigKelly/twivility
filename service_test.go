@@ -43,31 +43,13 @@ func (cli *TestTwitterClient) RetrieveHomeTimeline(count int, since int64, max i
 		tcounter++
 
 		// Hashtags
-		hashtags := make([]twitter.HashtagEntity, htcount)
 		for ht := 1; ht <= htcount; ht++ {
-			httxt := "#ht" + strconv.Itoa(ht)
-			txt += " " + httxt
-			end := len(txt)
-			start := end - (len(httxt) + 1)
-			hashtags[ht-1] = twitter.HashtagEntity{
-				Indices: twitter.Indices{start, end},
-				Text:    httxt,
-			}
+			txt += " " + "#ht" + strconv.Itoa(ht)
 		}
 
 		// User mentionsHashtags
-		mentions := make([]twitter.MentionEntity, umcount)
 		for m := 1; m <= umcount; m++ {
-			mtxt := "@Mention" + strconv.Itoa(m)
-			txt += " " + mtxt
-			end := len(txt)
-			start := end - (len(mtxt) + 1)
-			mentions[m-1] = twitter.MentionEntity{
-				Indices:    twitter.Indices{start, end},
-				ID:         int64(m),
-				Name:       mtxt,
-				ScreenName: mtxt,
-			}
+			txt += " " + "@Mention" + strconv.Itoa(m)
 		}
 
 		// Create and append tweet
@@ -81,19 +63,13 @@ func (cli *TestTwitterClient) RetrieveHomeTimeline(count int, since int64, max i
 				Name:       users[uid],
 				ScreenName: "@" + users[uid],
 			},
-			Entities: &twitter.Entities{
-				Hashtags:     hashtags,
-				Media:        make([]twitter.MediaEntity, 0),
-				Urls:         make([]twitter.URLEntity, 0),
-				UserMentions: mentions,
-			},
 		}
 		tweets = append(tweets, tweet)
 	}
 
-	one(1, "First tweet", 101, 1, 1)
+	one(1, "First tweet", 101, 0, 0)
 	one(2, "Second tweet A", 202, 2, 2)
-	one(3, "Second tweet B", 202, 0, 0)
+	one(3, "Second tweet B", 202, 1, 1)
 	one(4, "Last Tweet", 42, 0, 0)
 
 	return tweets, nil
@@ -136,29 +112,29 @@ func TestTwitterFileIO(t *testing.T) {
 
 	// check hash tags came back OK
 	assert.Equal(0, len(tweets[0].Hashtags))
-	assert.Equal(0, len(tweets[1].Hashtags))
+	assert.Equal(1, len(tweets[1].Hashtags))
 	assert.Equal(2, len(tweets[2].Hashtags))
-	assert.Equal(1, len(tweets[3].Hashtags))
+	assert.Equal(0, len(tweets[3].Hashtags))
 
 	assertHashtag := func(idx int, hidx int, expTag string) {
 		assert.Equal(expTag, tweets[idx].Hashtags[hidx])
 	}
 	assertHashtag(2, 0, "#ht1")
 	assertHashtag(2, 1, "#ht2")
-	assertHashtag(3, 0, "#ht1")
+	assertHashtag(1, 0, "#ht1")
 
 	// check user mentions came back OK
 	assert.Equal(0, len(tweets[0].Mentions))
-	assert.Equal(0, len(tweets[1].Mentions))
+	assert.Equal(1, len(tweets[1].Mentions))
 	assert.Equal(2, len(tweets[2].Mentions))
-	assert.Equal(1, len(tweets[3].Mentions))
+	assert.Equal(0, len(tweets[3].Mentions))
 
 	assertMention := func(idx int, midx int, expUsr string) {
 		assert.Equal(expUsr, tweets[idx].Mentions[midx])
 	}
 	assertMention(2, 0, "@Mention1")
 	assertMention(2, 1, "@Mention2")
-	assertMention(3, 0, "@Mention1")
+	assertMention(1, 0, "@Mention1")
 }
 
 func TestTwitterAcct(t *testing.T) {

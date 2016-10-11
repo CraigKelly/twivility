@@ -28,6 +28,7 @@ type TweetFileRecord struct {
 	RetweetCount   int
 	Hashtags       []string
 	Mentions       []string
+	IsRetweet      bool
 }
 
 // TweetFileRecordSlice is a slice of TweetFileRecords
@@ -93,9 +94,9 @@ func ReadTwitterFile(filename string) TweetFileRecordSlice {
 
 	dec := gob.NewDecoder(input)
 	records := make([]TweetFileRecord, 0, 512)
-	var rec TweetFileRecord
 
 	for {
+		rec := TweetFileRecord{}
 		err := dec.Decode(&rec)
 		if err != nil {
 			if err == io.EOF {
