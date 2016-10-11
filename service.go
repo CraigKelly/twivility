@@ -55,12 +55,12 @@ func firstNonBlank(candidates ...string) string {
 }
 
 func extractTweet(tweet twitter.Tweet) TweetFileRecord {
-	hashtags := make([]string, len(tweet.Entities.Hashtags))
+	hashtags := make([]string, 0, len(tweet.Entities.Hashtags))
 	for _, ht := range tweet.Entities.Hashtags {
 		hashtags = append(hashtags, ht.Text)
 	}
 
-	mentions := make([]string, len(tweet.Entities.UserMentions))
+	mentions := make([]string, 0, len(tweet.Entities.UserMentions))
 	for _, m := range tweet.Entities.UserMentions {
 		txt := firstNonBlank(m.ScreenName, m.Name, m.IDStr)
 		if len(txt) > 0 {
