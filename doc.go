@@ -12,38 +12,42 @@ flags (for instance, you can use `--consumer-key=yadda` instead of setting
 the environment variable TWITTER_CONSUMER_KEY). HOWEVER, that is generally
 a bad idea since the command line can be viewed with the `ps` command.
 
-Usage:
+Usage
+
     twivility [flags] cmd
 
-Commands:
-    service
-        Run the Twivility service (by default serving at Orwellian port 8484).
-        Includes the HTML client/site (served at "/"). The service will
-        occasionally query Twitter for new tweets.
+Commands
 
-    update
-        Updates the local store of stored tweets. Note that no synchronization
-        will be attempted with a running copy of the service, so you should
-        make sure to run this when no other instance of twivility is active.
+service
+    Run the Twivility service (by default serving at Orwellian port 8484).
+    Includes the HTML client/site (served at "/"). The service will
+    occasionally query Twitter for new tweets.
 
-    dump
-        Dump all tweets stored to stdout as a JSON object.
+update
+    Updates the local store of stored tweets. Note that no synchronization
+    will be attempted with a running copy of the service, so you should
+    make sure to run this when no other instance of twivility is active.
 
-    json
-        A synonym for the "dump" command
+dump
+    Dump all tweets stored to stdout as a JSON object.
 
-Flags:
-    -host <address binding string>
-        The default value is "127.0.0.1:8484". Note that this flag only has an
-        effect when using the "service" command
+json
+    A synonym for the "dump" command
 
-Environment Variables:
+Flags
+
+-host <address binding string>
+    The default value is "127.0.0.1:8484". Note that this flag only has an
+    effect when using the "service" command
+
+Environment Variables
+
     TWITTER_CONSUMER_KEY
     TWITTER_CONSUMER_SECRET
     TWITTER_ACCESS_TOKEN
     TWITTER_ACCESS_SECRET
 
-    These values can be found at
-    https://dev.twitter.com/oauth/overview/application-owner-access-tokens
+These values can be found at
+https://dev.twitter.com/oauth/overview/application-owner-access-tokens
 */
 package main
