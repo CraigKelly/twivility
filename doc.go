@@ -33,7 +33,7 @@ Commands:
         A synonym for the "dump" command
 
 Flags:
-    --host=<address binding string>
+    -host <address binding string>
         The default value is "127.0.0.1:8484". Note that this flag only has an
         effect when using the "service" command
 

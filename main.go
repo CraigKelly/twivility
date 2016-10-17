@@ -131,7 +131,7 @@ func runService(addrListen string, service *TwivilityService) {
 func main() {
 	log.Printf("STARTING twivility - built %s\n", buildDate)
 
-	flags := flag.NewFlagSet("user-auth", flag.ExitOnError)
+	flags := flag.NewFlagSet("twivility", flag.ExitOnError)
 	consumerKey := flags.String("consumer-key", "", "Twitter Consumer Key")
 	consumerSecret := flags.String("consumer-secret", "", "Twitter Consumer Secret")
 	accessToken := flags.String("access-token", "", "Twitter Access Token")
