@@ -46,8 +46,8 @@ func TestSortingTwitterFileRecords(t *testing.T) {
 	pcheck(err)
 	defer os.Remove(tmpfile.Name())
 
-	makeOne := func(tid int64, uid int64, s string) TweetFileRecord {
-		return TweetFileRecord{
+	makeOne := func(tid int64, uid int64, s string) TweetRecord {
+		return TweetRecord{
 			TweetID:   tid,
 			UserID:    uid,
 			UserName:  s,
@@ -56,7 +56,7 @@ func TestSortingTwitterFileRecords(t *testing.T) {
 		}
 	}
 
-	input := TweetFileRecordSlice{
+	input := TweetRecordList{
 		makeOne(1, 3, "C"),
 		makeOne(2, 2, "B"),
 		makeOne(3, 1, "A"),

@@ -6,11 +6,11 @@ import (
 
 // TwitterJSON provides JSON-export capability for records read from twitterFile
 type TwitterJSON struct {
-	TweetList TweetFileRecordSlice
+	TweetList TweetRecordList
 }
 
 // CreateTwitterJSON creates and returns a JSON string of the given records
-func CreateTwitterJSON(recs TweetFileRecordSlice) []byte {
+func CreateTwitterJSON(recs TweetRecordList) []byte {
 	topLevel := TwitterJSON{
 		TweetList: recs,
 	}

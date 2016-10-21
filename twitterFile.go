@@ -16,8 +16,8 @@ func safeClose(target io.Closer) {
 	}
 }
 
-// TweetFileRecord is the struct we store in a file for a single tweet
-type TweetFileRecord struct {
+// TweetRecord is the struct we store in a file for a single tweet
+type TweetRecord struct {
 	TweetID        int64
 	UserID         int64
 	UserScreenName string
@@ -31,16 +31,16 @@ type TweetFileRecord struct {
 	IsRetweet      bool
 }
 
-// TweetFileRecordSlice is a slice of TweetFileRecords
-type TweetFileRecordSlice []TweetFileRecord
+// TweetRecordList is a slice of TweetFileRecords
+type TweetRecordList []TweetRecord
 
 // sort.Interface
-func (frs TweetFileRecordSlice) Len() int           { return len(frs) }
-func (frs TweetFileRecordSlice) Swap(i, j int)      { frs[i], frs[j] = frs[j], frs[i] }
-func (frs TweetFileRecordSlice) Less(i, j int) bool { return frs[i].TweetID < frs[j].TweetID }
+func (frs TweetRecordList) Len() int           { return len(frs) }
+func (frs TweetRecordList) Swap(i, j int)      { frs[i], frs[j] = frs[j], frs[i] }
+func (frs TweetRecordList) Less(i, j int) bool { return frs[i].TweetID < frs[j].TweetID }
 
 // MinMax return the min and max tweet ID for the given slice. REQUIRES sorted slice
-func (frs TweetFileRecordSlice) MinMax() (mn int64, mx int64) {
+func (frs TweetRecordList) MinMax() (mn int64, mx int64) {
 	ln := len(frs)
 	if ln < 1 {
 		return 0, 0
@@ -49,7 +49,7 @@ func (frs TweetFileRecordSlice) MinMax() (mn int64, mx int64) {
 }
 
 // Seen returns a map of tweet ID's that have been seen
-func (frs TweetFileRecordSlice) Seen() map[int64]bool {
+func (frs TweetRecordList) Seen() map[int64]bool {
 	seen := make(map[int64]bool)
 	for _, tweet := range frs {
 		seen[tweet.TweetID] = true
@@ -58,7 +58,7 @@ func (frs TweetFileRecordSlice) Seen() map[int64]bool {
 }
 
 // SortTwitterRecords sorts the given TweetFileRecordSlice INPLACE in our "canonical" order
-func SortTwitterRecords(frs TweetFileRecordSlice) {
+func SortTwitterRecords(frs TweetRecordList) {
 	sort.Sort(sort.Reverse(frs))
 }
 
@@ -72,7 +72,7 @@ func TouchFile(filename string) {
 }
 
 // WriteTwitterFile writes the file - note that the slice is sorted (and therefore mutated)
-func (frs TweetFileRecordSlice) WriteTwitterFile(filename string) {
+func (frs TweetRecordList) WriteTwitterFile(filename string) {
 	output, err := os.Create(filename)
 	pcheck(err)
 	defer safeClose(output)
@@ -87,16 +87,16 @@ func (frs TweetFileRecordSlice) WriteTwitterFile(filename string) {
 }
 
 // ReadTwitterFile reads the specified file name for our twitter records
-func ReadTwitterFile(filename string) TweetFileRecordSlice {
+func ReadTwitterFile(filename string) TweetRecordList {
 	input, err := os.Open(filename)
 	pcheck(err)
 	defer safeClose(input)
 
 	dec := gob.NewDecoder(input)
-	records := make([]TweetFileRecord, 0, 512)
+	records := make([]TweetRecord, 0, 512)
 
 	for {
-		rec := TweetFileRecord{}
+		rec := TweetRecord{}
 		err := dec.Decode(&rec)
 		if err != nil {
 			if err == io.EOF {
@@ -109,5 +109,5 @@ func ReadTwitterFile(filename string) TweetFileRecordSlice {
 		records = append(records, rec)
 	}
 
-	return TweetFileRecordSlice(records)
+	return TweetRecordList(records)
 }

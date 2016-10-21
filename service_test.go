@@ -168,7 +168,7 @@ func TestTwitterAcctTweets(t *testing.T) {
 
 	assert.Equal(0, len(service.GetTweets("not-an-account")))
 
-	var tweets TweetFileRecordSlice
+	var tweets TweetRecordList
 
 	tweets = service.GetTweets("@CoolUser")
 	assert.Equal(1, len(tweets))

@@ -11,8 +11,8 @@ import (
 func TestTwitterJSON(t *testing.T) {
 	assert := assert.New(t)
 
-	makeOne := func(tid int64, uid int64, s string) TweetFileRecord {
-		return TweetFileRecord{
+	makeOne := func(tid int64, uid int64, s string) TweetRecord {
+		return TweetRecord{
 			TweetID:   tid,
 			UserID:    uid,
 			UserName:  s,
@@ -21,7 +21,7 @@ func TestTwitterJSON(t *testing.T) {
 		}
 	}
 
-	input := TweetFileRecordSlice{
+	input := TweetRecordList{
 		makeOne(1, 3, "C"),
 		makeOne(2, 2, "B"),
 		makeOne(3, 1, "A"),
@@ -29,7 +29,7 @@ func TestTwitterJSON(t *testing.T) {
 
 	data := CreateTwitterJSON(input)
 
-	output := TwitterJSON{TweetList: make([]TweetFileRecord, 0)}
+	output := TwitterJSON{TweetList: make([]TweetRecord, 0)}
 	json.Unmarshal(data, &output)
 
 	assert.Equal(3, len(output.TweetList))

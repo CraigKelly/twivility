@@ -20,13 +20,14 @@ type TwitterClient interface {
 type TwivilityService struct {
 	client        TwitterClient
 	dataFileName  string
-	currentTweets TweetFileRecordSlice
-	tweetMap      map[string]TweetFileRecordSlice
+	currentTweets TweetRecordList
+	tweetMap      map[string]TweetRecordList
 	tweetStoreMtx sync.RWMutex
 }
 
 // NewTwivilityService - return a nice, new twitter service. See main.go for
-// how a full client for Twitter is created
+// how a full client for Twitter is created. See service_test.go to see how
+// a mock client is created.
 func NewTwivilityService(client TwitterClient, dataFileName string) *TwivilityService {
 	return &TwivilityService{client: client, dataFileName: dataFileName}
 }
@@ -35,25 +36,14 @@ func NewTwivilityService(client TwitterClient, dataFileName string) *TwivilitySe
 // IMPORTANT! This function assumes that it does NOT need to worry about
 // tweetStoreMtx. Only call while service.tweetStoreMtx.Lock() is active
 func (service *TwivilityService) updateTweetMap() {
-	service.tweetMap = make(map[string]TweetFileRecordSlice)
+	service.tweetMap = make(map[string]TweetRecordList)
 	for _, tweet := range service.currentTweets {
 		list, inMap := service.tweetMap[tweet.UserScreenName]
 		if !inMap {
-			list = make(TweetFileRecordSlice, 0, len(service.currentTweets)/4)
+			list = make(TweetRecordList, 0, len(service.currentTweets)/4)
 		}
 		service.tweetMap[tweet.UserScreenName] = append(list, tweet)
 	}
-}
-
-// Return the first string that is more than just spaces
-func firstNonBlank(candidates ...string) string {
-	for _, s := range candidates {
-		t := strings.Trim(s, " ")
-		if len(t) > 0 {
-			return t
-		}
-	}
-	return ""
 }
 
 // Return all trimmed strings that are more than just spaces
@@ -73,7 +63,7 @@ var hashtagMatch = regexp.MustCompile(`#\w+\b`)
 var userMatch = regexp.MustCompile(`@\w+\b`)
 
 // Build our nice record from the 'actual' API record
-func extractTweet(tweet twitter.Tweet) TweetFileRecord {
+func extractTweet(tweet twitter.Tweet) TweetRecord {
 	txt := tweet.Text
 	isRetweet := false
 	if tweet.RetweetedStatus != nil && len(tweet.RetweetedStatus.Text) > 0 {
@@ -84,7 +74,7 @@ func extractTweet(tweet twitter.Tweet) TweetFileRecord {
 	}
 
 	// Note that we manually match the entities we want
-	return TweetFileRecord{
+	return TweetRecord{
 		TweetID:        tweet.ID,
 		UserID:         tweet.User.ID,
 		UserName:       tweet.User.Name,
@@ -100,7 +90,7 @@ func extractTweet(tweet twitter.Tweet) TweetFileRecord {
 }
 
 // ReadTwitterFile returns all records in our current twitter data store
-func (service *TwivilityService) ReadTwitterFile() TweetFileRecordSlice {
+func (service *TwivilityService) ReadTwitterFile() TweetRecordList {
 	// Yes: writer lock since we touch the file and update currentTweets
 	service.tweetStoreMtx.Lock()
 	defer service.tweetStoreMtx.Unlock()
@@ -193,14 +183,14 @@ func (service *TwivilityService) GetAccounts() []string {
 }
 
 // GetTweets returns the sorted tweet list for the specified account
-func (service *TwivilityService) GetTweets(acct string) TweetFileRecordSlice {
+func (service *TwivilityService) GetTweets(acct string) TweetRecordList {
 	service.tweetStoreMtx.RLock()
 	defer service.tweetStoreMtx.RUnlock()
 
 	list, inMap := service.tweetMap[acct]
 	if !inMap {
 		log.Printf("No map entry found for acct %v", acct)
-		return make(TweetFileRecordSlice, 0, 0)
+		return make(TweetRecordList, 0, 0)
 	}
 
 	return list
