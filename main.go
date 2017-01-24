@@ -10,7 +10,9 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/coreos/pkg/flagutil"
@@ -175,6 +177,22 @@ func main() {
 		fmt.Println(string(CreateTwitterJSON(records)))
 	} else if cmd == "service" {
 		runService(*hostBinding, service)
+	} else if cmd == "stream" {
+		params := &twitter.StreamFilterParams{
+			Track:         []string{"@memphispython", "@nasa"},
+			StallWarnings: twitter.Bool(true),
+		}
+		stream, err := client.Streams.Filter(params)
+		pcheck(err)
+		go func() {
+			for sm := range stream.Messages {
+				fmt.Println(sm)
+			}
+		}()
+		ch := make(chan os.Signal)
+		signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
+		log.Println(<-ch)
+		stream.Stop()
 	} else {
 		log.Printf("Options are service, update, or dump\n")
 	}
