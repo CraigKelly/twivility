@@ -176,8 +176,29 @@ func main() {
 		records := service.ReadTwitterFile()
 		fmt.Println(string(CreateTwitterJSON(records)))
 	} else if cmd == "service" {
+		// TODO: forget UI for now - let's just have a ReST service
 		runService(*hostBinding, service)
 	} else if cmd == "stream" {
+		// TODO: how to track options for stream
+		// TODO: write to file in JSON (so don't need a dump option)
+		// TODO: use the twitter demux from the lib
+		// TODO: restart every n minutes no matter what (and also handle errors gracefully)
+		// TODO: insure can run simultaneously with REST stuff in service
+
+		// TODO: only five @s at a time - will need 5 calls for startup on list of 25
+		// TODO: backfill doesn't appear to overlap with stream?
+		// TODO: backfill should read previous output and use max count
+		backfill := &twitter.SearchTweetParams{
+			Query: "@memphispython OR @nasa", // note: OR is casesensitive
+			// TODO: specify at lease some of Count, SinceID, MaxID
+		}
+		search, _, err := client.Search.Tweets(backfill)
+		pcheck(err)
+		for _, t := range search.Statuses {
+			fmt.Println(t)
+		}
+		fmt.Println("END OF BACKFILL-----------------------------------------------------")
+
 		params := &twitter.StreamFilterParams{
 			Track:         []string{"@memphispython", "@nasa"},
 			StallWarnings: twitter.Bool(true),
