@@ -1,106 +1,65 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8">
-    <meta http-equiv="x-ua-compatible" content="ie=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="utf-8">
+<meta http-equiv="x-ua-compatible" content="ie=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <meta name="author" content="Craig Kelly">
+<meta name="author" content="Craig Kelly">
 
-    <title>Twivility</title>
+<title>Twivility</title>
 
-    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,300italic,400italic,600italic|Source+Code+Pro" />
-    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Source+Serif+Pro:400,700,600&subset=latin,latin-ext">
-    <link rel="stylesheet" href="/static/main.css" type="text/css" />
+<style>
+    html {
+        font-size: 100%;
+        -ms-text-size-adjust: 100%;
+        -webkit-text-size-adjust: 100%;
+    }
+    body {
+        font-family: Helvetica, sans-serif;
+        font-size: 16px;
+        line-height: 150%;
+        text-align: left;
+        padding: 0;
+        margin: 0;
+    }
+    header {
+        padding: 0.5em;
+        margin: 0 0 1em 0;
+        line-height: 2em;
+        font-size: 145%;
+
+        background-color: #444;
+        color: #fff;
+
+        border-bottom: solid 1px #000;
+    }
+    .banner {
+        font-size: 125%;
+    }
+    .client-info {
+        padding: 1em;
+    }
+    .api-info {
+        padding: 1em;
+    }
+</style>
 </head>
 <body>
 
 <header>
     <div class="banner">Welcome to Twivility</div>
-    <div id="working" style="display:none; float:right;"></div>
+    Landing Page
 </header>
 
-<div class="wrapper">
-    <div class="container" id="mainData">
-    </div>
+<div class="client-info">
+    You are looking at the default page for the twivility server. You probably want to access
+    <a href="/client/index.html">The Client</a>.
 </div>
 
-<footer>
-    <p>Twivility is copyright {{Year}}</p>
-    <p><strong>All tweets were written by someone else. This is not an endorsement.</strong></p>
-</footer>
-
-<script type="text/javascript" src="/static/jquery-3.1.0.min.js"></script>
-<script type="text/javascript" src="/static/lodash.min.js"></script>
-<script type="text/javascript" src="/static/twivility.js"></script>
-
-<script type="text/template" class="acctTemplate">
-    <div class="acctPanel" id="<%= ctx.acct%>">
-        <div class="panelHeader">@<%= ctx.acct%></div>
-        <div class="panelBody">
-            <% _.forEach(ctx.tweets, function(tweet) { %>
-                <p><%= tweet.Timestamp%>:<%- tweet.Text%></p>
-                <p>Mentions:<%= tweet.Mentions%></p>
-                <p>Hashtags:<%= tweet.Hashtags%></p>
-                <hr />
-            <% }); %>
-        </div>
-    </div>
-</script>
-
-<script type="text/javascript">
-    var acctTemplate = _.template(
-        $("script.acctTemplate").html(),
-        { 'variable': 'ctx' }
-    );
-
-    function recvAcctTweets(acct, tweets) {
-        $("#" + acct).remove();  //Special: we know this from the template
-        $("#mainData").append(acctTemplate({
-            'acct': acct,
-            'tweets': [_.first(tweets), _.last(tweets)]
-        }));
-
-        var headerType = null;
-        if      (_.isLefty(acct))  headerType = "lefty";
-        else if (_.isRighty(acct)) headerType = "righty";
-
-        if (headerType) {
-            $("#" + acct).find(".panelHeader").addClass(headerType);
-        }
-    }
-
-    var sortVals = {
-        'hillaryclinton': 1,
-        'realdonaldtrump': 2,
-        'timkaine': 3,
-        'mike_pence': 4,
-    };
-    function sortXlate(acct) {
-        return sortVals[_.trim(acct).toLowerCase()] || 10000;
-    }
-
-    function acctTweetsFinished() {
-        var parent = $("#mainData");
-        var items = parent.children(".acctPanel").sort(function(a, b){
-            var lhs = sortXlate($(a).attr('id'));
-            var rhs = sortXlate($(b).attr('id'));
-            return (lhs < rhs) ? -1 : (lhs > rhs) ? 1 : 0;
-        });
-        parent.append(items);
-    }
-
-    function refreshAll() {
-        $("#working").html("Loading...").show();
-        GetAllAccts(recvAcctTweets, acctTweetsFinished).always(function() {
-            $("#working").html("").hide();
-        });
-    }
-
-    $(function() {
-        refreshAll();
-    });
-</script>
+<div class="api-info">
+    The API endpoints are <a href="/api/">here</a>
+</div>
 
 </body>
 </html>

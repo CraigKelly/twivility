@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="x-ua-compatible" content="ie=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<meta name="author" content="Craig Kelly">
+
+<title>Twivility API Documentation</title>
+
+<style>
+html {
+    font-size: 100%;
+    -ms-text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
+}
+body {
+    font-family: Helvetica, sans-serif;
+    font-size: 16px;
+    line-height: 150%;
+    text-align: left;
+    padding: 0;
+    margin: 0;
+}
+header {
+    padding: 0.5em;
+    margin: 0 0 1em 0;
+    line-height: 2em;
+    font-size: 145%;
+
+    background-color: #444;
+    color: #fff;
+
+    border-bottom: solid 1px #000;
+}
+.banner {
+    font-size: 125%;
+}
+.client-info {
+    padding: 1em;
+}
+.api-info {
+    padding: 1em;
+}
+.endpoint {
+    max-width: 30em;
+    margin-bottom: 2em;
+}
+.ep-path {
+    font-size: 110%;
+    font-weight: bold;
+    text-decoration: underline;
+}
+.ep-descrip {
+    margin-left: 1em;
+}
+</style>
+</head>
+<body>
+
+<header>
+    <div class="banner">Welcome to Twivility</div>
+    API Documentation
+</header>
+
+<div class="client-info">
+    The simple HTML5 client is <a href="/client/index.html">here</a>.
+</div>
+
+<div class="api-info">
+    <div class="endpoint">
+        <div class="ep-path">/api/accts</div>
+        <div class="ep-descrip">
+            Returns all accounts currently being tracked as a list of strings.
+            Each account corresponds to a Twitter handle without the leading "@"
+            symbol.
+        </div>
+    </div>
+
+    <div class="endpoint">
+        <div class="ep-path">/api/tweets/{acct}</div>
+        <div class="ep-descrip">
+            Returns a list of tweet objects corresponding the {acct} passed in
+            (which should be one of the accounts returned by /api/accts).
+            Fields are: <ul>
+                <li>TweetID</li>
+                <li>UserID</li>
+                <li>UserScreenName</li>
+                <li>Text</li>
+                <li>Timestamp</li>
+                <li>FavoriteCount</li>
+                <li>RetweetCount</li>
+                <li>Hashtahs</li>
+                <li>Mentions</li>
+                <li>IsRetweet</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

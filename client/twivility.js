@@ -74,7 +74,7 @@
     // Get all tweets and call callback with them. Return the Future used for
     // the server query
     function getSingleAcct(acct, callback) {
-        $.get("/tweets/" + acct)
+        $.get("/api/tweets/" + acct)
             .done(function(data) {
                 if (!!callback) {
                     callback(data);
@@ -91,7 +91,7 @@
     function getAllAccts(acctCallback, finishedCallback) {
         var count = 0;
 
-        return $.get("/accts")
+        return $.get("/api/accts")
             .done(function(data) {
                 _.each(data, function(acct){
                     count += 1;

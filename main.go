@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"html/template"
 	"log"
 	"net/http"
 	"os"
@@ -20,7 +19,7 @@ import (
 	"github.com/dghubble/oauth1"
 )
 
-// TODO: let's just make this a REST-only service for now: can always write a "real" frontend later
+// TODO: move main.html and api-default.html somewhere and have them share css (maybe with client?)
 // TODO: need to actually keep parsed entities
 
 var buildDate string // Set by our build script
@@ -83,36 +82,46 @@ func runService(addrListen string, service *TwivilityService) {
 		}
 	}()
 
-	// Service functions
-	http.HandleFunc("/accts", func(w http.ResponseWriter, req *http.Request) {
+	// API endpoints
+
+	http.HandleFunc("/api/accts", func(w http.ResponseWriter, req *http.Request) {
 		accts := service.GetAccounts()
 		log.Printf("GET %s - returning list of len %d\n", req.URL.Path, len(accts))
 		jsonResponse(w, req, accts)
 	})
-	http.HandleFunc("/tweets/", func(w http.ResponseWriter, req *http.Request) {
-		acct := strings.Replace(req.URL.Path, "/tweets/", "", 1)
+
+	http.HandleFunc("/api/tweets/", func(w http.ResponseWriter, req *http.Request) {
+		acct := strings.Replace(req.URL.Path, "/api/tweets/", "", 1)
 		tweets := service.GetTweets(acct)
 		log.Printf("GET %s - returning list of len %d for acct %s\n", req.URL.Path, len(tweets), acct)
 		jsonResponse(w, req, tweets)
 	})
 
-	// Serve static files
-	fs := http.FileServer(http.Dir("./static"))
-	http.Handle("/static/", http.StripPrefix("/static/", fs))
+	//TODO: return stream output from json file
 
-	// provide some functions to our templates
-	funcMap := template.FuncMap{
-		"Year": func() string { return time.Now().Format("2006") },
-	}
+	//TODO: stats page with counts by account, last update time, etc
 
-	http.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
-		//TODO: move out after debugging
-		templates := template.Must(template.New("ui").Funcs(funcMap).ParseFiles("main.html"))
-
-		err := templates.ExecuteTemplate(w, "main.html", nil)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+	// API default and unspecified API end points
+	http.HandleFunc("/api/", func(w http.ResponseWriter, req *http.Request) {
+		if req.URL.Path != "/api/" {
+			http.Error(w, "Unknown API path "+req.URL.Path, 404)
+			return
 		}
+		http.ServeFile(w, req, "./api-default.html")
+	})
+
+	// Our static HTML5 client
+	fs := http.FileServer(http.Dir("./client"))
+	http.Handle("/client/", http.StripPrefix("/client/", fs))
+
+	// The default page if you just come to the root of the site (or an
+	// unhandled endpoint)
+	http.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
+		if req.URL.Path != "/" {
+			http.Error(w, "Unknown API path "+req.URL.Path, 404)
+			return
+		}
+		http.ServeFile(w, req, "./main.html")
 	})
 
 	if addrListen == "" {
@@ -210,6 +219,6 @@ func main() {
 		log.Println(<-ch)
 		stream.Stop()
 	} else {
-		log.Printf("Options are service, update, or dump\n")
+		log.Printf("Options are service, update, dump, or stream\n")
 	}
 }

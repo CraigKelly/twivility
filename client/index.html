@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <meta name="author" content="Craig Kelly">
+
+    <title>Twivility</title>
+
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,300italic,400italic,600italic|Source+Code+Pro" />
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Source+Serif+Pro:400,700,600&subset=latin,latin-ext">
+    <link rel="stylesheet" href="main.css" type="text/css" />
+</head>
+<body>
+
+<header>
+    <div class="banner">Welcome to Twivility</div>
+    <div id="working" style="display:none; float:right;"></div>
+</header>
+
+<div class="wrapper">
+    <div class="container" id="mainData">
+    </div>
+</div>
+
+<footer>
+    <p>Twivility is copyright <span id="copyright-year"></span></p>
+    <p><strong>All tweets were written by someone else. This is not an endorsement.</strong></p>
+</footer>
+
+<script type="text/javascript" src="jquery-3.1.0.min.js"></script>
+<script type="text/javascript" src="lodash.min.js"></script>
+<script type="text/javascript" src="twivility.js"></script>
+
+<script type="text/template" class="acctTemplate">
+    <div class="acctPanel" id="<%= ctx.acct%>">
+        <div class="panelHeader">@<%= ctx.acct%></div>
+        <div class="panelBody">
+            <% _.forEach(ctx.tweets, function(tweet) { %>
+                <p><%= tweet.Timestamp%>:<%- tweet.Text%></p>
+                <p>Mentions:<%= tweet.Mentions%></p>
+                <p>Hashtags:<%= tweet.Hashtags%></p>
+                <hr />
+            <% }); %>
+        </div>
+    </div>
+</script>
+
+<script type="text/javascript">
+    var acctTemplate = _.template(
+        $("script.acctTemplate").html(),
+        { 'variable': 'ctx' }
+    );
+
+    function recvAcctTweets(acct, tweets) {
+        $("#" + acct).remove();  //Special: we know this from the template
+        $("#mainData").append(acctTemplate({
+            'acct': acct,
+            'tweets': [_.first(tweets), _.last(tweets)]
+        }));
+
+        var headerType = null;
+        if      (_.isLefty(acct))  headerType = "lefty";
+        else if (_.isRighty(acct)) headerType = "righty";
+
+        if (headerType) {
+            $("#" + acct).find(".panelHeader").addClass(headerType);
+        }
+    }
+
+    var sortVals = {
+        'hillaryclinton': 1,
+        'realdonaldtrump': 2,
+        'timkaine': 3,
+        'mike_pence': 4,
+    };
+    function sortXlate(acct) {
+        return sortVals[_.trim(acct).toLowerCase()] || 10000;
+    }
+
+    function acctTweetsFinished() {
+        var parent = $("#mainData");
+        var items = parent.children(".acctPanel").sort(function(a, b){
+            var lhs = sortXlate($(a).attr('id'));
+            var rhs = sortXlate($(b).attr('id'));
+            return (lhs < rhs) ? -1 : (lhs > rhs) ? 1 : 0;
+        });
+        parent.append(items);
+    }
+
+    function refreshAll() {
+        $("#working").html("Loading...").show();
+        GetAllAccts(recvAcctTweets, acctTweetsFinished).always(function() {
+            $("#working").html("").hide();
+        });
+    }
+
+    $(function() {
+        $('#copyright-year').text(new Date().getFullYear());
+        refreshAll();
+    });
+</script>
+
+</body>
+</html>
