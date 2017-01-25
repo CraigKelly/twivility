@@ -20,10 +20,8 @@ import (
 	"github.com/dghubble/oauth1"
 )
 
+// TODO: let's just make this a REST-only service for now: can always write a "real" frontend later
 // TODO: need to actually keep parsed entities
-// TODO: when we can get the file for SlangSD we can try some sentiment ratings
-// TODO: ADMINS - web service giving stats on file contents - extra file Options
-// TODO: ADMINS - web service can be prompted to update, and also has a scheduled update
 
 var buildDate string // Set by our build script
 
@@ -176,20 +174,17 @@ func main() {
 		records := service.ReadTwitterFile()
 		fmt.Println(string(CreateTwitterJSON(records)))
 	} else if cmd == "service" {
-		// TODO: forget UI for now - let's just have a ReST service
 		runService(*hostBinding, service)
 	} else if cmd == "stream" {
-		// TODO: how to track options for stream
 		// TODO: write to file in JSON (so don't need a dump option)
 		// TODO: use the twitter demux from the lib
 		// TODO: restart every n minutes no matter what (and also handle errors gracefully)
 		// TODO: insure can run simultaneously with REST stuff in service
 
 		// TODO: only five @s at a time - will need 5 calls for startup on list of 25
-		// TODO: backfill doesn't appear to overlap with stream?
 		// TODO: backfill should read previous output and use max count
 		backfill := &twitter.SearchTweetParams{
-			Query: "@memphispython OR @nasa", // note: OR is casesensitive
+			Query: "@memphispython OR @binarydolphin", // note: OR is casesensitive
 			// TODO: specify at lease some of Count, SinceID, MaxID
 		}
 		search, _, err := client.Search.Tweets(backfill)
@@ -200,7 +195,7 @@ func main() {
 		fmt.Println("END OF BACKFILL-----------------------------------------------------")
 
 		params := &twitter.StreamFilterParams{
-			Track:         []string{"@memphispython", "@nasa"},
+			Track:         []string{"@memphispython", "@binarydolphin"},
 			StallWarnings: twitter.Bool(true),
 		}
 		stream, err := client.Streams.Filter(params)
