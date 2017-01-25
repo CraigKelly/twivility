@@ -70,7 +70,7 @@ header {
 
 <div class="api-info">
     <div class="endpoint">
-        <div class="ep-path">/api/accts</div>
+        <div class="ep-path">GET /api/accts</div>
         <div class="ep-descrip">
             Returns all accounts currently being tracked as a list of strings.
             Each account corresponds to a Twitter handle without the leading "@"
@@ -79,7 +79,7 @@ header {
     </div>
 
     <div class="endpoint">
-        <div class="ep-path">/api/tweets/{acct}</div>
+        <div class="ep-path">GET /api/tweets/{acct}</div>
         <div class="ep-descrip">
             Returns a list of tweet objects corresponding the {acct} passed in
             (which should be one of the accounts returned by /api/accts).
@@ -91,7 +91,7 @@ header {
                 <li>Timestamp</li>
                 <li>FavoriteCount</li>
                 <li>RetweetCount</li>
-                <li>Hashtahs</li>
+                <li>Hashtags</li>
                 <li>Mentions</li>
                 <li>IsRetweet</li>
             </ul>
