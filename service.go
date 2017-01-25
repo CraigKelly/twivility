@@ -122,7 +122,7 @@ func (service *TwivilityService) UpdateTwitterFile() (int, error) {
 
 		totalAdded += addCount
 		if totalAdded > 700 {
-			break // Totaly arbitrary - don't get more than 2K at a time
+			break // Totaly arbitrary - don't get more than 700 at a time
 		}
 
 		if len(seen) == preSeen {
