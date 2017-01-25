@@ -6,6 +6,8 @@ import (
 	"log"
 	"os"
 	"sort"
+
+	"github.com/dghubble/go-twitter/twitter"
 )
 
 // Simple helper for closing closers
@@ -29,6 +31,33 @@ type TweetRecord struct {
 	Hashtags       []string
 	Mentions       []string
 	IsRetweet      bool
+}
+
+// NewTweetRecord builds our nice record from the 'actual' API record
+func NewTweetRecord(tweet twitter.Tweet) TweetRecord {
+	txt := tweet.Text
+	isRetweet := false
+	if tweet.RetweetedStatus != nil && len(tweet.RetweetedStatus.Text) > 0 {
+		// Use the actual retweed text since twitter likes to trunc the text
+		// in the RT
+		txt = tweet.RetweetedStatus.Text
+		isRetweet = true
+	}
+
+	// Note that we manually match the entities we want
+	return TweetRecord{
+		TweetID:        tweet.ID,
+		UserID:         tweet.User.ID,
+		UserName:       tweet.User.Name,
+		UserScreenName: tweet.User.ScreenName,
+		Text:           txt,
+		Timestamp:      tweet.CreatedAt,
+		FavoriteCount:  tweet.FavoriteCount,
+		RetweetCount:   tweet.RetweetCount,
+		Hashtags:       allNonBlank(hashtagMatch.FindAllString(txt, -1)),
+		Mentions:       allNonBlank(userMatch.FindAllString(txt, -1)),
+		IsRetweet:      isRetweet,
+	}
 }
 
 // TweetRecordList is a slice of TweetFileRecords

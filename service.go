@@ -62,33 +62,6 @@ func allNonBlank(results []string) []string {
 var hashtagMatch = regexp.MustCompile(`#\w+\b`)
 var userMatch = regexp.MustCompile(`@\w+\b`)
 
-// Build our nice record from the 'actual' API record
-func extractTweet(tweet twitter.Tweet) TweetRecord {
-	txt := tweet.Text
-	isRetweet := false
-	if tweet.RetweetedStatus != nil && len(tweet.RetweetedStatus.Text) > 0 {
-		// Use the actual retweed text since twitter likes to trunc the text
-		// in the RT
-		txt = tweet.RetweetedStatus.Text
-		isRetweet = true
-	}
-
-	// Note that we manually match the entities we want
-	return TweetRecord{
-		TweetID:        tweet.ID,
-		UserID:         tweet.User.ID,
-		UserName:       tweet.User.Name,
-		UserScreenName: tweet.User.ScreenName,
-		Text:           txt,
-		Timestamp:      tweet.CreatedAt,
-		FavoriteCount:  tweet.FavoriteCount,
-		RetweetCount:   tweet.RetweetCount,
-		Hashtags:       allNonBlank(hashtagMatch.FindAllString(txt, -1)),
-		Mentions:       allNonBlank(userMatch.FindAllString(txt, -1)),
-		IsRetweet:      isRetweet,
-	}
-}
-
 // ReadTwitterFile returns all records in our current twitter data store
 func (service *TwivilityService) ReadTwitterFile() TweetRecordList {
 	// Yes: writer lock since we touch the file and update currentTweets
@@ -137,7 +110,7 @@ func (service *TwivilityService) UpdateTwitterFile() (int, error) {
 			tweetID := tweet.ID
 			if _, inMap := seen[tweetID]; !inMap {
 				// New ID!
-				newRec := extractTweet(tweet)
+				newRec := NewTweetRecord(tweet)
 				existing = append(existing, newRec)
 				seen[tweetID] = true
 				addCount++
