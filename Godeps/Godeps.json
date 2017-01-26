@@ -5,36 +5,36 @@
 	"Deps": [
 		{
 			"ImportPath": "github.com/cenkalti/backoff",
-			"Comment": "v1.0.0-14-g8edc80b",
-			"Rev": "8edc80b07f38c27352fb186d971c628a6c32552b"
+			"Comment": "v1.0.0-15-gb02f2bb",
+			"Rev": "b02f2bbce11d7ea6b97f282ef1771b0fe2f65ef3"
 		},
 		{
 			"ImportPath": "github.com/coreos/pkg/flagutil",
-			"Comment": "v3",
-			"Rev": "3ac0863d7acf3bc44daf49afef8919af12f704ef"
+			"Comment": "v3-2-g447b7ec",
+			"Rev": "447b7ec906e523386d9c53be15b55a8ae86ea944"
 		},
 		{
 			"ImportPath": "github.com/davecgh/go-spew/spew",
-			"Comment": "v1.0.0-3-g6d21280",
-			"Rev": "6d212800a42e8ab5c146b8ace3490ee17e5225f9"
+			"Comment": "v1.1.0",
+			"Rev": "346938d642f2ec3594ed81d874461961cd0faa76"
 		},
 		{
 			"ImportPath": "github.com/dghubble/go-twitter/twitter",
-			"Rev": "12e5387804e84bf20dc60ba964f59437553e16a6"
+			"Rev": "8a37d370f7ab4551ee30109ebbef470a3271d33b"
 		},
 		{
 			"ImportPath": "github.com/dghubble/oauth1",
-			"Comment": "v0.4.0-11-g4385816",
-			"Rev": "4385816142116aade2d97d0f320f9d3666e74cd9"
+			"Comment": "v0.4.0-13-g67de468",
+			"Rev": "67de46873d807fffa7cd47fdae2531e23a8e994c"
 		},
 		{
 			"ImportPath": "github.com/dghubble/sling",
-			"Comment": "v1.0-28-gc961a43",
-			"Rev": "c961a4334054e64299d16f8a31bd686ee2565ae4"
+			"Comment": "v1.1.0",
+			"Rev": "eb56e89ac5088bebb12eef3cb4b293300f43608b"
 		},
 		{
 			"ImportPath": "github.com/google/go-querystring/query",
-			"Rev": "9235644dd9e52eeae6fa48efd539fdc351a0af53"
+			"Rev": "53e6ce116135b80d037921a7fdd5138cf32d7a8a"
 		},
 		{
 			"ImportPath": "github.com/pmezard/go-difflib/difflib",
@@ -43,22 +43,22 @@
 		},
 		{
 			"ImportPath": "github.com/stretchr/testify/assert",
-			"Comment": "v1.1.4-4-g976c720",
-			"Rev": "976c720a22c8eb4eb6a0b4348ad85ad12491a506"
+			"Comment": "v1.1.4-25-g2402e8e",
+			"Rev": "2402e8e7a02fc811447d11f881aa9746cdc57983"
 		},
 		{
 			"ImportPath": "golang.org/x/net/context",
-			"Rev": "cf4effbb9db1f3ef07f7e1891402991b6afbb276"
+			"Rev": "f2499483f923065a842d38eb4c7f1927e6fc6e6d"
 		},
 		{
 			"ImportPath": "github.com/stretchr/testify/vendor/github.com/davecgh/go-spew/spew",
-			"Comment": "v1.1.4-4-g976c720",
-			"Rev": "976c720a22c8eb4eb6a0b4348ad85ad12491a506"
+			"Comment": "v1.1.4-25-g2402e8e",
+			"Rev": "2402e8e7a02fc811447d11f881aa9746cdc57983"
 		},
 		{
 			"ImportPath": "github.com/stretchr/testify/vendor/github.com/pmezard/go-difflib/difflib",
-			"Comment": "v1.1.4-4-g976c720",
-			"Rev": "976c720a22c8eb4eb6a0b4348ad85ad12491a506"
+			"Comment": "v1.1.4-25-g2402e8e",
+			"Rev": "2402e8e7a02fc811447d11f881aa9746cdc57983"
 		}
 	]
 }
