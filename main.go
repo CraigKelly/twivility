@@ -19,6 +19,10 @@ import (
 	"github.com/dghubble/oauth1"
 )
 
+// TODO: add stream to service routine
+// TODO: restart every n minutes no matter what (and also handle errors gracefully)
+// TODO: insure can run simultaneously with REST stuff in service
+
 // TODO: move main.html and api-default.html somewhere and have them share css (maybe with client?)
 // TODO: need to actually keep parsed entities
 
@@ -185,39 +189,20 @@ func main() {
 	} else if cmd == "service" {
 		runService(*hostBinding, service)
 	} else if cmd == "stream" {
-		// TODO: write to file in JSON (so don't need a dump option)
-		// TODO: use the twitter demux from the lib
-		// TODO: restart every n minutes no matter what (and also handle errors gracefully)
-		// TODO: insure can run simultaneously with REST stuff in service
+		// We need an accounts list to listen to
+		service.UpdateTwitterFile()
+		accts := service.GetAccounts()
 
-		// TODO: only five @s at a time - will need 5 calls for startup on list of 25
-		// TODO: backfill should read previous output and use max count
-		backfill := &twitter.SearchTweetParams{
-			Query: "@memphispython OR @binarydolphin", // note: OR is casesensitive
-			// TODO: specify at lease some of Count, SinceID, MaxID
+		mentions := NewTwitterMentions(client, "stream.json")
+		mentions.Mention = func(tweet TweetRecord) {
+			log.Printf("%d: %s\n", tweet.TweetID, tweet.Text)
 		}
-		search, _, err := client.Search.Tweets(backfill)
-		pcheck(err)
-		for _, t := range search.Statuses {
-			fmt.Println(t)
-		}
-		fmt.Println("END OF BACKFILL-----------------------------------------------------")
+		go mentions.Stream(accts)
 
-		params := &twitter.StreamFilterParams{
-			Track:         []string{"@memphispython", "@binarydolphin"},
-			StallWarnings: twitter.Bool(true),
-		}
-		stream, err := client.Streams.Filter(params)
-		pcheck(err)
-		go func() {
-			for sm := range stream.Messages {
-				fmt.Println(sm)
-			}
-		}()
 		ch := make(chan os.Signal)
 		signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
 		log.Println(<-ch)
-		stream.Stop()
+		mentions.Stop()
 	} else {
 		log.Printf("Options are service, update, dump, or stream\n")
 	}

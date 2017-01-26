@@ -110,7 +110,7 @@ func (service *TwivilityService) UpdateTwitterFile() (int, error) {
 			tweetID := tweet.ID
 			if _, inMap := seen[tweetID]; !inMap {
 				// New ID!
-				newRec := NewTweetRecord(tweet)
+				newRec := NewTweetRecord(&tweet)
 				existing = append(existing, newRec)
 				seen[tweetID] = true
 				addCount++

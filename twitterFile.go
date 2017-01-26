@@ -3,20 +3,11 @@ package main
 import (
 	"encoding/gob"
 	"io"
-	"log"
 	"os"
 	"sort"
 
 	"github.com/dghubble/go-twitter/twitter"
 )
-
-// Simple helper for closing closers
-func safeClose(target io.Closer) {
-	err := target.Close()
-	if err != nil {
-		log.Printf("Error closing something - will continue\n")
-	}
-}
 
 // TweetRecord is the struct we store in a file for a single tweet
 type TweetRecord struct {
@@ -34,7 +25,7 @@ type TweetRecord struct {
 }
 
 // NewTweetRecord builds our nice record from the 'actual' API record
-func NewTweetRecord(tweet twitter.Tweet) TweetRecord {
+func NewTweetRecord(tweet *twitter.Tweet) TweetRecord {
 	txt := tweet.Text
 	isRetweet := false
 	if tweet.RetweetedStatus != nil && len(tweet.RetweetedStatus.Text) > 0 {
@@ -91,20 +82,11 @@ func SortTwitterRecords(frs TweetRecordList) {
 	sort.Sort(sort.Reverse(frs))
 }
 
-// TouchFile insures that our input/output file exists
-func TouchFile(filename string) {
-	if _, err := os.Stat(filename); os.IsNotExist(err) {
-		f, err := os.Create(filename)
-		pcheck(err)
-		safeClose(f)
-	}
-}
-
 // WriteTwitterFile writes the file - note that the slice is sorted (and therefore mutated)
 func (frs TweetRecordList) WriteTwitterFile(filename string) {
 	output, err := os.Create(filename)
 	pcheck(err)
-	defer safeClose(output)
+	defer SafeClose(output)
 
 	SortTwitterRecords(frs)
 
@@ -119,7 +101,7 @@ func (frs TweetRecordList) WriteTwitterFile(filename string) {
 func ReadTwitterFile(filename string) TweetRecordList {
 	input, err := os.Open(filename)
 	pcheck(err)
-	defer safeClose(input)
+	defer SafeClose(input)
 
 	dec := gob.NewDecoder(input)
 	records := make([]TweetRecord, 0, 512)
