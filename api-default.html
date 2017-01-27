@@ -55,6 +55,10 @@ header {
 .ep-descrip {
     margin-left: 1em;
 }
+.ep-ref {
+    font-weight: bold;
+    text-decoration: underline;
+}
 </style>
 </head>
 <body>
@@ -95,6 +99,28 @@ header {
                 <li>Mentions</li>
                 <li>IsRetweet</li>
             </ul>
+        </div>
+    </div>
+
+    <div class="endpoint">
+        <div class="ep-path">GET /api/stats</div>
+        <div class="ep-descrip">
+            Returns statistics on current service
+            Fields are: <ul>
+                <li>LastUpdateTime - last time timeline was polled</li>
+                <li>LastStreamRecv - last time a streaming result (mention) was received</li>
+                <li>MentionCount - number of streaming mentions captured since service start</li>
+                <li>Accts - dictionary of accounts in timeline where the value is number of tweets stored</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="endpoint">
+        <div class="ep-path">GET /api/recent-stream</div>
+        <div class="ep-descrip">
+            Returns the most recently streamed tweets (mentions). The max is currently 100.
+            The format is the same as <span class="ep-ref">GET /api/tweets/{acct}</span>.
+            Note that all captured mentions are kept on the server in the file stream.json.
         </div>
     </div>
 </div>

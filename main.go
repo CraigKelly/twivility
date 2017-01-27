@@ -19,10 +19,6 @@ import (
 	"github.com/dghubble/oauth1"
 )
 
-// TODO: add stream to service routine
-// TODO: restart every n minutes no matter what (and also handle errors gracefully)
-// TODO: insure can run simultaneously with REST stuff in service
-
 // TODO: move main.html and api-default.html somewhere and have them share css (maybe with client?)
 // TODO: need to actually keep parsed entities
 
@@ -66,11 +62,46 @@ func jsonResponse(w http.ResponseWriter, req *http.Request, jsonSrc interface{})
 	w.Write(js)
 }
 
-func runService(addrListen string, service *TwivilityService) {
+// statResult is what we return for the stats API (and isn't used anywhere else)
+type statResult struct {
+	LastUpdateTime string
+	LastStreamRecv string
+	MentionCount   int64
+	Accts          map[string]int
+}
+
+func runService(addrListen string, service *TwivilityService, mentions *TwitterMentions) {
 	// Initial update
 	service.UpdateTwitterFile()
+	lastUpdate := time.Now()
 
-	// Make sure to update the tweets every 5 minutes
+	// Start the mention stream
+	var lastMentionRecv time.Time
+
+	var recentMentions struct {
+		tweets []TweetRecord
+		curr   int
+	}
+	recentMentions.curr = -1
+	recentMentions.tweets = make([]TweetRecord, 100)
+
+	mentions.Mention = func(tweet TweetRecord) {
+		lastMentionRecv = time.Now()
+
+		recentMentions.curr = (recentMentions.curr + 1) % 100
+		recentMentions.tweets[recentMentions.curr] = tweet
+
+		cnt := mentions.Count
+		if cnt > 0 && cnt%1000 == 0 {
+			log.Printf("Mentions: Seen %d\n", cnt)
+		}
+	}
+
+	go mentions.Stream(service.GetAccounts())
+	defer mentions.Stop()
+
+	// Make sure to update the tweets every 5 minutes. We also take the
+	// opportunity to stop and restart our stream gathering
 	updateTicker := time.NewTicker(5 * time.Minute)
 	updateQuit := make(chan struct{})
 	defer close(updateQuit)
@@ -78,7 +109,10 @@ func runService(addrListen string, service *TwivilityService) {
 		for {
 			select {
 			case <-updateTicker.C:
+				mentions.Stop()
 				service.UpdateTwitterFile()
+				lastUpdate = time.Now()
+				go mentions.Stream(service.GetAccounts())
 			case <-updateQuit:
 				updateTicker.Stop()
 				return
@@ -87,6 +121,21 @@ func runService(addrListen string, service *TwivilityService) {
 	}()
 
 	// API endpoints
+
+	http.HandleFunc("/api/stats", func(w http.ResponseWriter, req *http.Request) {
+		stats := statResult{
+			LastUpdateTime: lastUpdate.Format(time.RFC1123Z),
+			LastStreamRecv: lastMentionRecv.Format(time.RFC1123Z),
+			MentionCount:   mentions.Count,
+			Accts:          make(map[string]int),
+		}
+		for _, acct := range service.GetAccounts() {
+			stats.Accts[acct] = service.GetTweets(acct).Len()
+		}
+
+		log.Printf("GET %s - returning stats\n", req.URL.Path)
+		jsonResponse(w, req, stats)
+	})
 
 	http.HandleFunc("/api/accts", func(w http.ResponseWriter, req *http.Request) {
 		accts := service.GetAccounts()
@@ -101,9 +150,16 @@ func runService(addrListen string, service *TwivilityService) {
 		jsonResponse(w, req, tweets)
 	})
 
-	//TODO: return stream output from json file
-
-	//TODO: stats page with counts by account, last update time, etc
+	http.HandleFunc("/api/recent-stream", func(w http.ResponseWriter, req *http.Request) {
+		tweets := TweetRecordList(make([]TweetRecord, 0, 100))
+		for _, tw := range recentMentions.tweets {
+			if tw.TweetID != 0 {
+				tweets = append(tweets, tw)
+			}
+		}
+		SortTwitterRecords(tweets)
+		jsonResponse(w, req, tweets)
+	})
 
 	// API default and unspecified API end points
 	http.HandleFunc("/api/", func(w http.ResponseWriter, req *http.Request) {
@@ -185,11 +241,15 @@ func main() {
 		service.UpdateTwitterFile()
 	} else if cmd == "dump" || cmd == "json" {
 		records := service.ReadTwitterFile()
-		fmt.Println(string(CreateTwitterJSON(records)))
+		txt, err := json.Marshal(records)
+		pcheck(err)
+		fmt.Println(txt)
 	} else if cmd == "service" {
-		runService(*hostBinding, service)
+		mentions := NewTwitterMentions(client, "stream.json")
+		runService(*hostBinding, service, mentions)
 	} else if cmd == "stream" {
 		// We need an accounts list to listen to
+		log.Println("Outputting streamed mentions until CTRL+C")
 		service.UpdateTwitterFile()
 		accts := service.GetAccounts()
 

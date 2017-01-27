@@ -16,7 +16,6 @@ import (
 type TwitterMentions struct {
 	Client   *twitter.Client
 	Filename string
-	Accts    []string
 	Count    int64
 	stream   *twitter.Stream
 	Mention  func(tweet TweetRecord)
@@ -27,7 +26,6 @@ func NewTwitterMentions(client *twitter.Client, filename string) *TwitterMention
 	return &TwitterMentions{
 		Client:   client,
 		Filename: filename,
-		Accts:    make([]string, 0),
 		Count:    0,
 		stream:   nil,
 	}
@@ -66,6 +64,13 @@ func (tm *TwitterMentions) Stream(accts []string) error {
 		return err
 	}
 
+	// Insure all accts are prefixed with @
+	for i, acct := range accts {
+		if !strings.HasPrefix(acct, "@") {
+			accts[i] = "@" + acct
+		}
+	}
+
 	log.Printf("Mentions: starting stream on accts %v\n", accts)
 
 	// Our file should exist, even if it's empty
@@ -79,7 +84,7 @@ func (tm *TwitterMentions) Stream(accts []string) error {
 	}
 
 	// Open the data file
-	output, err := os.Create(tm.Filename)
+	output, err := os.OpenFile(tm.Filename, os.O_APPEND|os.O_WRONLY, 0600)
 	pcheck(err)
 	defer SafeClose(output)
 
@@ -93,10 +98,13 @@ func (tm *TwitterMentions) Stream(accts []string) error {
 		// Note that we'll continue if we see an error
 		log.Printf("Mentions: there was an error getting backfills: %v\n", err)
 	}
-	for _, t := range search.Statuses {
-		err = tm.WriteTweet(&t, output)
-		if err != nil {
-			log.Printf("Mentions: could not write backfill tweet to %s: %v\n", tm.Filename, err)
+	if search != nil {
+		log.Printf("Mentions: backfill on %v received %d responses\n", backfill.Query, len(search.Statuses))
+		for _, t := range search.Statuses {
+			err = tm.WriteTweet(&t, output)
+			if err != nil {
+				log.Printf("Mentions: could not write backfill tweet to %s: %v\n", tm.Filename, err)
+			}
 		}
 	}
 

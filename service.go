@@ -147,7 +147,7 @@ func (service *TwivilityService) GetAccounts() []string {
 	service.tweetStoreMtx.RLock()
 	defer service.tweetStoreMtx.RUnlock()
 
-	accts := make([]string, 0, 4)
+	accts := make([]string, 0, len(service.tweetMap))
 	for acct := range service.tweetMap {
 		accts = append(accts, acct)
 	}
