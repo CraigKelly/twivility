@@ -1,16 +1,10 @@
-@import url("reset.css");
-
-.color-main { color: #7A296A }
-.color-fore-light { color: #B77AAB }
-.color-fore-dark { color: #3D0031 }
-
 html {
     font-size: 100%;
     -ms-text-size-adjust: 100%;
     -webkit-text-size-adjust: 100%;
 }
 body {
-    font-family: 'Source Sans Pro', sans-serif;
+    font-family: Helvetica, sans-serif;
     font-size: 16px;
     line-height: 150%;
     text-align: left;
@@ -24,74 +18,36 @@ header {
     line-height: 2em;
     font-size: 145%;
 
-    background-color: #7A296A;
-    background: linear-gradient(to right, rgba(35, 32, 102, 1), rgba(233, 29, 14, 1));
+    background-color: #444;
     color: #fff;
+
+    border-bottom: solid 1px #000;
+}
+.banner {
+    font-size: 125%;
 }
 
-.container {
-    display: flex;
-    flex-direction: column;
+.client-info {
     padding: 1em;
-    align-items: center;
-    justify-content: center;
 }
 
-.acctPanel {
-    flex: 1;
-    padding: 0;
-    margin: 1em;
-    border: solid 1px #333;
+.api-info {
+    padding: 1em;
 }
 
-.panelHeader {
-    background-color: #591F4E; /* Crap blue/red mix */
-    color: white;
+.endpoint {
+    max-width: 30em;
+    margin-bottom: 2em;
+}
+.ep-path {
+    font-size: 110%;
     font-weight: bold;
-    font-size: 115%;
-    padding: 1em;
-    margin: 0;
+    text-decoration: underline;
 }
-
-.lefty {
-    background-color: #232066;
-    background-color: rgba(35, 32, 102, 1);
+.ep-descrip {
+    margin-left: 1em;
 }
-
-.righty {
-    background-color: #E91D0E;
-    background-color: rgba(233, 29, 14, 1);
-}
-
-.panelBody {
-    padding: 1em;
-}
-
-footer {
-    border-top: solid 1px #333;
-    color: #3D0031;
-    line-height: 1.25em;
-    padding: 1em;
-    font-size: 90%;
-    margin-top: 2.5em;
-}
-
-/* Responsive */
-
-@media screen and (min-width: 768px) {
-    body {
-        padding: 0 5% 0 5%;
-    }
-
-    .container {
-        max-width: 98%;
-        flex-direction: row;
-        flex-flow: row wrap;
-        align-items: flex-start;
-        justify-content: flex-start;
-    }
-
-    .acctPanel {
-        flex-basis: 40%;
-    }
+.ep-ref {
+    font-weight: bold;
+    text-decoration: underline;
 }

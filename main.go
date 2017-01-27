@@ -19,9 +19,6 @@ import (
 	"github.com/dghubble/oauth1"
 )
 
-// TODO: move main.html and api-default.html somewhere and have them share css (maybe with client?)
-// TODO: need to actually keep parsed entities
-
 var buildDate string // Set by our build script
 
 /////////////////////////////////////////////////////////////////////////////
@@ -167,7 +164,7 @@ func runService(addrListen string, service *TwivilityService, mentions *TwitterM
 			http.Error(w, "Unknown API path "+req.URL.Path, 404)
 			return
 		}
-		http.ServeFile(w, req, "./api-default.html")
+		http.ServeFile(w, req, "./client/api-default.html")
 	})
 
 	// Our static HTML5 client
@@ -181,7 +178,7 @@ func runService(addrListen string, service *TwivilityService, mentions *TwitterM
 			http.Error(w, "Unknown API path "+req.URL.Path, 404)
 			return
 		}
-		http.ServeFile(w, req, "./main.html")
+		http.ServeFile(w, req, "./client/main.html")
 	})
 
 	if addrListen == "" {
