@@ -88,26 +88,6 @@ func (tm *TwitterMentions) Stream(accts []string) error {
 	pcheck(err)
 	defer SafeClose(output)
 
-	// Get tweets via search to backfill our stream
-	// TODO: only five @s at a time - will need 5 calls for startup on list of 25
-	backfill := &twitter.SearchTweetParams{
-		Query: strings.Join(accts, " OR "), // note: OR is casesensitive
-	}
-	search, _, err := tm.Client.Search.Tweets(backfill)
-	if err != nil {
-		// Note that we'll continue if we see an error
-		log.Printf("Mentions: there was an error getting backfills: %v\n", err)
-	}
-	if search != nil {
-		log.Printf("Mentions: backfill on %v received %d responses\n", backfill.Query, len(search.Statuses))
-		for _, t := range search.Statuses {
-			err = tm.WriteTweet(&t, output)
-			if err != nil {
-				log.Printf("Mentions: could not write backfill tweet to %s: %v\n", tm.Filename, err)
-			}
-		}
-	}
-
 	// If we see a stream, someone else is running and we have a race condition
 	if tm.stream != nil {
 		log.Panicln("Stream found an already running instance: RACE CONDITION")
