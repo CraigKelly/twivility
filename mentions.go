@@ -94,6 +94,7 @@ func (tm *TwitterMentions) Stream(accts []string) error {
 	}
 
 	// Start our stream
+	// TODO: Track should get list of accts AND list of hastags
 	params := &twitter.StreamFilterParams{
 		Track:         accts,
 		StallWarnings: twitter.Bool(true),
