@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"io"
+	"io/ioutil"
 	"log"
 	"os"
 	"strings"
@@ -20,15 +21,47 @@ type TwitterMentions struct {
 	Filename string
 	Count    int64
 	stream   *twitter.Stream
+	Hashtags []string
 	Mention  func(tweet TweetRecord)
 }
 
+// readHashtags reads whitespace-delimited hashtags from the given file and
+// returns an array of strings. Any string that does not begin with either #
+// or @ will have # prepended. The array returned is sorted and duplicate-free
+func readHashtags(filename string) ([]string, error) {
+	if filename == "" {
+		return []string{}, nil
+	}
+
+	buf, err := ioutil.ReadFile(filename)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return []string{}, nil
+		}
+		return []string{}, err
+	}
+
+	tags := NewUniqueStrings()
+	for _, one := range strings.Fields(string(buf)) {
+		if !strings.HasPrefix(one, "#") && !strings.HasPrefix(one, "@") {
+			one = "#" + one
+		}
+		tags.Add(one)
+	}
+
+	return tags.Strings(), nil
+}
+
 // NewTwitterMentions creates a new TwitterMentions instance
-func NewTwitterMentions(client *twitter.Client, filename string) *TwitterMentions {
+func NewTwitterMentions(client *twitter.Client, filename string, hashtagFile string) *TwitterMentions {
+	tags, err := readHashtags(hashtagFile)
+	pcheck(err)
+
 	return &TwitterMentions{
 		Client:   client,
 		Filename: filename,
 		Count:    0,
+		Hashtags: tags,
 		stream:   nil,
 	}
 }
@@ -66,14 +99,20 @@ func (tm *TwitterMentions) Stream(accts []string) error {
 		return err
 	}
 
-	// Insure all accts are prefixed with @
-	for i, acct := range accts {
+	// Create our tracking array (and insure all accts are prefixed with @)
+	gather := NewUniqueStrings()
+	for _, acct := range accts {
 		if !strings.HasPrefix(acct, "@") {
-			accts[i] = "@" + acct
+			acct = "@" + acct
 		}
+		gather.Add(acct)
 	}
+	for _, tag := range tm.Hashtags {
+		gather.Add(tag)
+	}
+	trackQuery := gather.Strings()
 
-	log.Printf("Mentions: starting stream on accts %v\n", accts)
+	log.Printf("Mentions: starting stream on %v\n", trackQuery)
 
 	// Our file should exist, even if it's empty
 	TouchFile(tm.Filename)
@@ -98,7 +137,7 @@ func (tm *TwitterMentions) Stream(accts []string) error {
 	// Start our stream
 	// TODO: Track should get list of accts AND list of hastags
 	params := &twitter.StreamFilterParams{
-		Track:         accts,
+		Track:         trackQuery,
 		StallWarnings: twitter.Bool(true),
 	}
 	stream, err := tm.Client.Streams.Filter(params)

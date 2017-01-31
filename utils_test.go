@@ -18,3 +18,22 @@ func TestPcheck(t *testing.T) {
 		pcheck(errors.New("I should panic"))
 	})
 }
+
+func TestUniqueStrings(t *testing.T) {
+	assert := assert.New(t)
+
+	us := NewUniqueStrings()
+	assert.Len(us.Seen, 0)
+
+	us.Add("b")
+	us.Add("a")
+	assert.Len(us.Seen, 2)
+
+	us.Add("b")
+	us.Add("a")
+	assert.Len(us.Seen, 2)
+
+	// Test twice
+	assert.Equal([]string{"a", "b"}, us.Strings())
+	assert.Equal([]string{"a", "b"}, us.Strings())
+}

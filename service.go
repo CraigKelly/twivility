@@ -40,7 +40,7 @@ func (service *TwivilityService) updateTweetMap() {
 	for _, tweet := range service.currentTweets {
 		list, inMap := service.tweetMap[tweet.UserScreenName]
 		if !inMap {
-			list = make(TweetRecordList, 0, len(service.currentTweets)/4)
+			list = make(TweetRecordList, 0, 128)
 		}
 		service.tweetMap[tweet.UserScreenName] = append(list, tweet)
 	}

@@ -21,6 +21,11 @@ import (
 
 var buildDate string // Set by our build script
 
+const (
+	tweetStoreFile  = "tweetstore.gob"
+	streamStoreFile = "stream.json"
+)
+
 /////////////////////////////////////////////////////////////////////////////
 // Twitter client that ACTUALLY talked to Twitter
 
@@ -64,7 +69,19 @@ type statResult struct {
 	LastUpdateTime string
 	LastStreamRecv string
 	MentionCount   int64
+	StoreSizeMB    float32
+	StreamSizeMB   float32
 	Accts          map[string]int
+}
+
+// fileSizeMB returns the size of the given file in MB. On any error (including
+// file not found), 0.0 is returned
+func fileSizeMB(filename string) float32 {
+	st, err := os.Stat(filename)
+	if err != nil || st.IsDir() {
+		return 0.0
+	}
+	return float32(st.Size()) / 1048576.0
 }
 
 func runService(addrListen string, service *TwivilityService, mentions *TwitterMentions) {
@@ -124,6 +141,8 @@ func runService(addrListen string, service *TwivilityService, mentions *TwitterM
 			LastUpdateTime: lastUpdate.Format(time.RFC1123Z),
 			LastStreamRecv: lastMentionRecv.Format(time.RFC1123Z),
 			MentionCount:   mentions.Count,
+			StoreSizeMB:    fileSizeMB(tweetStoreFile),
+			StreamSizeMB:   fileSizeMB(streamStoreFile),
 			Accts:          make(map[string]int),
 		}
 		for _, acct := range service.GetAccounts() {
@@ -203,6 +222,7 @@ func main() {
 	accessToken := flags.String("access-token", "", "Twitter Access Token")
 	accessSecret := flags.String("access-secret", "", "Twitter Access Secret")
 	hostBinding := flags.String("host", "", "How to listen for service")
+	hashtagFile := flags.String("hashtags", "", "Filename with list of hashtags")
 
 	pcheck(flags.Parse(os.Args[1:]))
 	pcheck(flagutil.SetFlagsFromEnv(flags, "TWITTER"))
@@ -232,7 +252,7 @@ func main() {
 	log.Printf("User Verified:%v\n", user.Name)
 
 	wrapped := &WrappedTwitterClient{client: client}
-	service := NewTwivilityService(wrapped, "tweetstore.gob")
+	service := NewTwivilityService(wrapped, tweetStoreFile)
 
 	if cmd == "update" {
 		service.UpdateTwitterFile()
@@ -242,7 +262,8 @@ func main() {
 		pcheck(err)
 		fmt.Println(txt)
 	} else if cmd == "service" {
-		mentions := NewTwitterMentions(client, "stream.json")
+		log.Printf("Using hashtag file %s\n", *hashtagFile)
+		mentions := NewTwitterMentions(client, streamStoreFile, *hashtagFile)
 		runService(*hostBinding, service, mentions)
 	} else if cmd == "stream" {
 		// We need an accounts list to listen to
@@ -250,7 +271,8 @@ func main() {
 		service.UpdateTwitterFile()
 		accts := service.GetAccounts()
 
-		mentions := NewTwitterMentions(client, "stream.json")
+		log.Printf("Using hashtag file %s\n", *hashtagFile)
+		mentions := NewTwitterMentions(client, streamStoreFile, *hashtagFile)
 		mentions.Mention = func(tweet TweetRecord) {
 			log.Printf("%d: %s\n", tweet.TweetID, tweet.Text)
 		}
