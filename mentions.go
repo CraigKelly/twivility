@@ -11,6 +11,8 @@ import (
 )
 
 // TODO: need some testing up in here!
+// TODO: test with George's list
+// TODO: deploy
 
 // TwitterMentions provides stream-to-file functionality
 type TwitterMentions struct {
