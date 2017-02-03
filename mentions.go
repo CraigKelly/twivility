@@ -12,8 +12,6 @@ import (
 )
 
 // TODO: need some testing up in here!
-// TODO: test with George's list
-// TODO: deploy
 
 // TwitterMentions provides stream-to-file functionality
 type TwitterMentions struct {
@@ -135,7 +133,6 @@ func (tm *TwitterMentions) Stream(accts []string) error {
 	}
 
 	// Start our stream
-	// TODO: Track should get list of accts AND list of hastags
 	params := &twitter.StreamFilterParams{
 		Track:         trackQuery,
 		StallWarnings: twitter.Bool(true),
