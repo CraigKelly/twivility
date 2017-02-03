@@ -47,7 +47,10 @@ func (cli *WrappedTwitterClient) RetrieveHomeTimeline(count int, since int64, ma
 		homeTimelineParams.Count,
 		homeTimelineParams.MaxID,
 		homeTimelineParams.SinceID)
-	tweets, _, tweetErr := cli.client.Timelines.HomeTimeline(homeTimelineParams)
+	tweets, resp, tweetErr := cli.client.Timelines.HomeTimeline(homeTimelineParams)
+	if tweetErr != nil {
+		log.Printf("GET Home Timeline FAILED => Resp[%d]:%s Headers:%v\n", resp.StatusCode, resp.Status, resp.Header)
+	}
 	return tweets, tweetErr
 }
 
