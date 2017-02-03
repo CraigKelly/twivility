@@ -86,7 +86,7 @@ func TestTwitterFileIO(t *testing.T) {
 	service := NewTwivilityService(client, tmpfile.Name())
 
 	assertUpdate := func(expected int) {
-		count, err := service.UpdateTwitterFile()
+		count, err := service.UpdateTwitterFile(false)
 		assert.Nil(err)
 		assert.Equal(expected, count)
 	}
@@ -146,7 +146,7 @@ func TestTwitterAcct(t *testing.T) {
 
 	client := &TestTwitterClient{}
 	service := NewTwivilityService(client, tmpfile.Name())
-	service.UpdateTwitterFile()
+	service.UpdateTwitterFile(false)
 
 	accts := service.GetAccounts()
 	assert.Equal(3, len(accts))
@@ -164,7 +164,7 @@ func TestTwitterAcctTweets(t *testing.T) {
 
 	client := &TestTwitterClient{}
 	service := NewTwivilityService(client, tmpfile.Name())
-	service.UpdateTwitterFile()
+	service.UpdateTwitterFile(false)
 
 	assert.Equal(0, len(service.GetTweets("not-an-account")))
 
@@ -200,7 +200,7 @@ func TestTwitterFailingClient(t *testing.T) {
 	goodClient := &TestTwitterClient{}
 
 	assertUpdate := func(expected int, haveErr bool, s *TwivilityService) {
-		count, err := s.UpdateTwitterFile()
+		count, err := s.UpdateTwitterFile(false)
 		if haveErr {
 			assert.NotNil(err)
 		} else {

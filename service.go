@@ -77,7 +77,9 @@ func (service *TwivilityService) ReadTwitterFile() TweetRecordList {
 }
 
 // UpdateTwitterFile updates our twitter store on disk
-func (service *TwivilityService) UpdateTwitterFile() (int, error) {
+// If backfill is true, query as if the twitter file is empty and then
+// eliminate duplicates
+func (service *TwivilityService) UpdateTwitterFile(backfill bool) (int, error) {
 	service.tweetStoreMtx.Lock()
 	defer service.tweetStoreMtx.Unlock()
 
@@ -93,6 +95,14 @@ func (service *TwivilityService) UpdateTwitterFile() (int, error) {
 	qMax := int64(0)
 	if len(existing) > 0 {
 		qSince = mxID
+	}
+
+	// To back fill, we leave existing alone but reset everything else
+	if backfill {
+		log.Printf("Resetting for backfill query operation\n")
+		mnID = int64(0)
+		mxID = int64(0)
+		qSince = int64(0)
 	}
 
 	totalAdded := 0

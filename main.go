@@ -86,7 +86,7 @@ func fileSizeMB(filename string) float32 {
 
 func runService(addrListen string, service *TwivilityService, mentions *TwitterMentions) {
 	// Initial update
-	service.UpdateTwitterFile()
+	service.UpdateTwitterFile(false)
 	lastUpdate := time.Now()
 
 	// Start the mention stream
@@ -124,7 +124,7 @@ func runService(addrListen string, service *TwivilityService, mentions *TwitterM
 			select {
 			case <-updateTicker.C:
 				mentions.Stop()
-				service.UpdateTwitterFile()
+				service.UpdateTwitterFile(false)
 				lastUpdate = time.Now()
 				go mentions.Stream(service.GetAccounts())
 			case <-updateQuit:
@@ -255,7 +255,10 @@ func main() {
 	service := NewTwivilityService(wrapped, tweetStoreFile)
 
 	if cmd == "update" {
-		service.UpdateTwitterFile()
+		service.UpdateTwitterFile(false)
+	} else if cmd == "backfill" {
+		service.UpdateTwitterFile(true)
+		service.UpdateTwitterFile(false)
 	} else if cmd == "dump" || cmd == "json" {
 		records := service.ReadTwitterFile()
 		txt, err := json.Marshal(records)
@@ -268,7 +271,7 @@ func main() {
 	} else if cmd == "stream" {
 		// We need an accounts list to listen to
 		log.Println("Outputting streamed mentions until CTRL+C")
-		service.UpdateTwitterFile()
+		service.UpdateTwitterFile(false)
 		accts := service.GetAccounts()
 
 		log.Printf("Using hashtag file %s\n", *hashtagFile)
@@ -283,6 +286,6 @@ func main() {
 		log.Println(<-ch)
 		mentions.Stop()
 	} else {
-		log.Printf("Options are service, update, dump, or stream\n")
+		log.Printf("Options are service, update, backfill, dump, or stream\n")
 	}
 }
