@@ -264,9 +264,11 @@ func main() {
 		service.UpdateTwitterFile(false)
 	} else if cmd == "dump" || cmd == "json" {
 		records := service.ReadTwitterFile()
-		txt, err := json.Marshal(records)
-		pcheck(err)
-		fmt.Println(txt)
+		for _, rec := range records {
+			txt, err := json.Marshal(rec)
+			pcheck(err)
+			fmt.Println(string(txt))
+		}
 	} else if cmd == "service" {
 		log.Printf("Using hashtag file %s\n", *hashtagFile)
 		mentions := NewTwitterMentions(client, streamStoreFile, *hashtagFile)
