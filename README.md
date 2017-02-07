@@ -55,3 +55,8 @@ export TWITTER_CONSUMER_SECRET="todo"
 export TWITTER_ACCESS_TOKEN="todo"
 export TWITTER_ACCESS_SECRET="todo"
 ````
+
+## License
+
+This code is licensed under the MIT license. Please see `LICENSE`.
+
