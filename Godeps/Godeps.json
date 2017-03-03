@@ -1,7 +1,7 @@
 {
 	"ImportPath": "github.com/CraigKelly/twivility",
-	"GoVersion": "go1.7",
-	"GodepVersion": "v74",
+	"GoVersion": "go1.8",
+	"GodepVersion": "v79",
 	"Deps": [
 		{
 			"ImportPath": "github.com/cenkalti/backoff",
@@ -10,8 +10,8 @@
 		},
 		{
 			"ImportPath": "github.com/coreos/pkg/flagutil",
-			"Comment": "v3-2-g447b7ec",
-			"Rev": "447b7ec906e523386d9c53be15b55a8ae86ea944"
+			"Comment": "v3-5-g1c941d7",
+			"Rev": "1c941d73110817a80b9fa6e14d5d2b00d977ce2a"
 		},
 		{
 			"ImportPath": "github.com/davecgh/go-spew/spew",
@@ -20,17 +20,17 @@
 		},
 		{
 			"ImportPath": "github.com/dghubble/go-twitter/twitter",
-			"Rev": "8a37d370f7ab4551ee30109ebbef470a3271d33b"
+			"Rev": "fc93bb35701bb85903d17daa80a21a824b9c592f"
 		},
 		{
 			"ImportPath": "github.com/dghubble/oauth1",
-			"Comment": "v0.4.0-13-g67de468",
-			"Rev": "67de46873d807fffa7cd47fdae2531e23a8e994c"
+			"Comment": "v0.4.0-14-g3c7784d",
+			"Rev": "3c7784d12fed88888d612324ea6897f7dc30723e"
 		},
 		{
 			"ImportPath": "github.com/dghubble/sling",
-			"Comment": "v1.1.0",
-			"Rev": "eb56e89ac5088bebb12eef3cb4b293300f43608b"
+			"Comment": "v1.1.0-1-g91b015f",
+			"Rev": "91b015f8c5e231605ed75a74130ca0fa48b28cb1"
 		},
 		{
 			"ImportPath": "github.com/google/go-querystring/query",
@@ -43,22 +43,22 @@
 		},
 		{
 			"ImportPath": "github.com/stretchr/testify/assert",
-			"Comment": "v1.1.4-25-g2402e8e",
-			"Rev": "2402e8e7a02fc811447d11f881aa9746cdc57983"
+			"Comment": "v1.1.4-27-g4d4bfba",
+			"Rev": "4d4bfba8f1d1027c4fdbe371823030df51419987"
 		},
 		{
 			"ImportPath": "golang.org/x/net/context",
-			"Rev": "f2499483f923065a842d38eb4c7f1927e6fc6e6d"
+			"Rev": "906cda9512f77671ab44f8c8563b13a8e707b230"
 		},
 		{
 			"ImportPath": "github.com/stretchr/testify/vendor/github.com/davecgh/go-spew/spew",
-			"Comment": "v1.1.4-25-g2402e8e",
-			"Rev": "2402e8e7a02fc811447d11f881aa9746cdc57983"
+			"Comment": "v1.1.4-27-g4d4bfba",
+			"Rev": "4d4bfba8f1d1027c4fdbe371823030df51419987"
 		},
 		{
 			"ImportPath": "github.com/stretchr/testify/vendor/github.com/pmezard/go-difflib/difflib",
-			"Comment": "v1.1.4-25-g2402e8e",
-			"Rev": "2402e8e7a02fc811447d11f881aa9746cdc57983"
+			"Comment": "v1.1.4-27-g4d4bfba",
+			"Rev": "4d4bfba8f1d1027c4fdbe371823030df51419987"
 		}
 	]
 }
