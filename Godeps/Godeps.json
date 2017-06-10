@@ -5,13 +5,13 @@
 	"Deps": [
 		{
 			"ImportPath": "github.com/cenkalti/backoff",
-			"Comment": "v1.0.0-18-g3db60c8",
-			"Rev": "3db60c813733fce657c114634171689bbf1f8dee"
+			"Comment": "v1.0.0-19-g5d150e7",
+			"Rev": "5d150e7eec023ce7a124856b37c68e54b4050ac7"
 		},
 		{
 			"ImportPath": "github.com/coreos/pkg/flagutil",
-			"Comment": "v3-5-g1c941d7",
-			"Rev": "1c941d73110817a80b9fa6e14d5d2b00d977ce2a"
+			"Comment": "v3-9-g8dbaa49",
+			"Rev": "8dbaa491b063ed47e2474b5363de0c0db91cf9f2"
 		},
 		{
 			"ImportPath": "github.com/davecgh/go-spew/spew",
@@ -20,12 +20,12 @@
 		},
 		{
 			"ImportPath": "github.com/dghubble/go-twitter/twitter",
-			"Rev": "fc93bb35701bb85903d17daa80a21a824b9c592f"
+			"Rev": "d7141a7cba567120d53d0a136fce068864b43f8c"
 		},
 		{
 			"ImportPath": "github.com/dghubble/oauth1",
-			"Comment": "v0.4.0-14-g3c7784d",
-			"Rev": "3c7784d12fed88888d612324ea6897f7dc30723e"
+			"Comment": "v0.4.0-16-g7d51c10",
+			"Rev": "7d51c10e15ca32917b32ce43f6e25840d6951db4"
 		},
 		{
 			"ImportPath": "github.com/dghubble/sling",
@@ -43,22 +43,22 @@
 		},
 		{
 			"ImportPath": "github.com/stretchr/testify/assert",
-			"Comment": "v1.1.4-27-g4d4bfba",
-			"Rev": "4d4bfba8f1d1027c4fdbe371823030df51419987"
+			"Comment": "v1.1.4-66-gf6abca5",
+			"Rev": "f6abca593680b2315d2075e0f5e2a9751e3f431a"
 		},
 		{
 			"ImportPath": "golang.org/x/net/context",
-			"Rev": "c4f37062e123971566edb19fb0554351464f8a98"
+			"Rev": "1a68b1313cf4ad7778376e82641197b60c02f65c"
 		},
 		{
 			"ImportPath": "github.com/stretchr/testify/vendor/github.com/davecgh/go-spew/spew",
-			"Comment": "v1.1.4-27-g4d4bfba",
-			"Rev": "4d4bfba8f1d1027c4fdbe371823030df51419987"
+			"Comment": "v1.1.4-66-gf6abca5",
+			"Rev": "f6abca593680b2315d2075e0f5e2a9751e3f431a"
 		},
 		{
 			"ImportPath": "github.com/stretchr/testify/vendor/github.com/pmezard/go-difflib/difflib",
-			"Comment": "v1.1.4-27-g4d4bfba",
-			"Rev": "4d4bfba8f1d1027c4fdbe371823030df51419987"
+			"Comment": "v1.1.4-66-gf6abca5",
+			"Rev": "f6abca593680b2315d2075e0f5e2a9751e3f431a"
 		}
 	]
 }
